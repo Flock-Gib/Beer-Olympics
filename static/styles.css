@@ -1,4 +1,4 @@
-/* Final Polished CSS for Juneteenth Beer Olympics - Centered Pages + Responsive Navbar (Fixed for Desktop) */
+/* Final Polished CSS for Juneteenth Beer Olympics - Centered Pages + Responsive Navbar */
 
 @keyframes gradientFlow {
     0% { background-position: 0% 50%; }
@@ -111,31 +111,141 @@ ul.navbar li a:hover {
     }
 }
 
-/* Form and Page Styling (same as before) */
-.volunteer-container { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 100px 20px 40px; min-height: 80vh; }
-.volunteer-container h1 { color: #d63031; margin-bottom: 20px; }
-.volunteer-container p { font-size: 1.2em; margin-bottom: 20px; }
+/* Forms and Containers */
+.volunteer-container, .venmo-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 100px 20px 40px;
+    min-height: 80vh;
+}
 
-form { background: rgba(255, 255, 255, 0.95); padding: 25px; border-radius: 8px; max-width: 500px; width: 90%; margin: 0 auto; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); box-sizing: border-box; display: flex; flex-direction: column; gap: 15px; }
+.volunteer-container h1, .venmo-container h1 {
+    color: #d63031;
+    margin-bottom: 20px;
+}
 
-label { font-weight: bold; }
+.volunteer-container p {
+    font-size: 1.2em;
+    margin-bottom: 20px;
+}
 
-input[type="text"], input[type="email"], input[type="password"], button { width: 100%; padding: 12px; border: 1px solid #dfe6e9; border-radius: 4px; box-sizing: border-box; }
+.signup-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2rem;
+    justify-content: center;
+    margin: 2rem auto;
+    max-width: 1000px;
+    padding: 1rem;
+}
 
-button { background-color: #00b894; color: white; font-weight: bold; cursor: pointer; transition: background-color 0.3s; }
-button:hover { background-color: #019875; }
+.signup-container > div {
+    flex: 1 1 300px;
+    background: rgba(255, 255, 255, 0.95);
+    padding: 25px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    box-sizing: border-box;
+}
 
-a { text-decoration: none; color: #0984e3; }
-a:hover { text-decoration: underline; }
+.signup-container h1 {
+    text-align: center;
+    color: #d63031;
+    margin-bottom: 20px;
+}
 
-footer { text-align: center; margin: 40px 0 20px; font-size: 0.9em; color: #636e72; }
+.signup-container form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
 
-.gallery { display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; margin-top: 20px; }
-.gallery img { border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.2); transition: transform 0.3s; }
-.gallery img:hover { transform: scale(1.05); }
+.signup-container label {
+    font-weight: bold;
+}
 
-ul.flashes { list-style: none; padding: 0; margin: 20px auto; max-width: 500px; text-align: center; }
-ul.flashes li { background: #ffeaa7; border: 1px solid #fdcb6e; padding: 10px; margin-top: 5px; border-radius: 4px; color: #2d3436; font-weight: bold; }
+.signup-container input[type="text"],
+.signup-container input[type="email"],
+.signup-container input[type="password"],
+.signup-container button {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #dfe6e9;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
 
-.venmo-container { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 100px 20px 40px; min-height: 80vh; }
-.venmo-qr { width: 300px; max-width: 90%; display: block; margin: 20px auto; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+.signup-container button {
+    background-color: #00b894;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.signup-container button:hover {
+    background-color: #019875;
+}
+
+a {
+    text-decoration: none;
+    color: #0984e3;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+footer {
+    text-align: center;
+    margin: 40px 0 20px;
+    font-size: 0.9em;
+    color: #636e72;
+}
+
+.gallery {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.gallery img {
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    transition: transform 0.3s;
+}
+
+.gallery img:hover {
+    transform: scale(1.05);
+}
+
+ul.flashes {
+    list-style: none;
+    padding: 0;
+    margin: 20px auto;
+    max-width: 500px;
+    text-align: center;
+}
+
+ul.flashes li {
+    background: #ffeaa7;
+    border: 1px solid #fdcb6e;
+    padding: 10px;
+    margin-top: 5px;
+    border-radius: 4px;
+    color: #2d3436;
+    font-weight: bold;
+}
+
+.venmo-qr {
+    width: 300px;
+    max-width: 90%;
+    display: block;
+    margin: 20px auto;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
