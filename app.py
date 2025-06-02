@@ -13,13 +13,13 @@ app.secret_key = os.getenv('FLASK_SECRET_KEY', 'your_secret_key_here')
 
 # Google Sheets setup
 scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-creds_path = os.getenv('GOOGLE_APPLICATION_CREDENTIALS', 'creds.json')
+creds_path = os.getenv('GOOGLE_APPLICATION_CREDENTIALS', '/etc/secrets/creds.json')  # Updated for Render
 creds = ServiceAccountCredentials.from_json_keyfile_name(creds_path, scope)
 client = gspread.authorize(creds)
 sheet_signup = client.open("Gibs Juneteenth Beer Olympics Signups").sheet1
 sheet_volunteer = client.open("Gibs Juneteenth Beer Olympics Volunteers").sheet1
 
-# Admin credentials (optional: store in .env)
+# Admin credentials (from .env)
 ADMIN_USERNAME = os.getenv('ADMIN_USERNAME', 'admin')
 ADMIN_PASSWORD = os.getenv('ADMIN_PASSWORD', 'Flock1234!')
 
@@ -105,4 +105,5 @@ def event():
     return render_template('event.html')
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port)
