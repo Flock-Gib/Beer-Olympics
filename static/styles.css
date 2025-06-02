@@ -1,4 +1,4 @@
-/* Final Polished CSS for Juneteenth Beer Olympics - Centered Pages + Responsive Navbar */
+/* Final Polished CSS for Juneteenth Beer Olympics - Centered Pages + Responsive Navbar (Uniform Forms) */
 
 @keyframes gradientFlow {
     0% { background-position: 0% 50%; }
@@ -68,6 +68,7 @@ ul.navbar {
     gap: 15px;
     margin: 0;
     padding: 0;
+    overflow-wrap: anywhere;
 }
 
 ul.navbar li a {
@@ -110,7 +111,6 @@ ul.navbar li a:hover {
     }
 }
 
-/* Shared Containers */
 .container {
     width: 90%;
     max-width: 1000px;
@@ -118,7 +118,6 @@ ul.navbar li a:hover {
     padding: 20px;
 }
 
-/* Forms and Containers */
 .volunteer-container, .venmo-container, .signup-container {
     display: flex;
     flex-direction: column;
@@ -138,45 +137,34 @@ ul.navbar li a:hover {
     margin-bottom: 20px;
 }
 
-.signup-container {
-    flex-direction: row;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 2rem;
-}
-
-.signup-container > div {
-    flex: 1 1 300px;
+.signup-container form, form {
     background: rgba(255, 255, 255, 0.95);
     padding: 25px;
     border-radius: 8px;
+    max-width: 500px;
+    width: 90%;
+    margin: 0 auto;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     box-sizing: border-box;
-}
-
-.signup-container form {
     display: flex;
     flex-direction: column;
     gap: 15px;
-    width: 100%;
 }
 
-.signup-container label {
+form label, .signup-container label {
     font-weight: bold;
 }
 
-.signup-container input[type="text"],
-.signup-container input[type="email"],
-.signup-container input[type="password"],
-.signup-container button {
+input[type="text"], input[type="email"], input[type="password"], input[type="tel"], input[type="number"], textarea, select, button {
     width: 100%;
     padding: 12px;
     border: 1px solid #dfe6e9;
     border-radius: 4px;
     box-sizing: border-box;
+    font-size: 1em;
 }
 
-.signup-container button {
+button {
     background-color: #00b894;
     color: white;
     font-weight: bold;
@@ -184,7 +172,7 @@ ul.navbar li a:hover {
     transition: background-color 0.3s;
 }
 
-.signup-container button:hover {
+button:hover {
     background-color: #019875;
 }
 
@@ -206,7 +194,6 @@ a {
     text-decoration: none;
     color: #0984e3;
 }
-
 a:hover {
     text-decoration: underline;
 }
@@ -225,7 +212,6 @@ ul.flashes {
     max-width: 500px;
     text-align: center;
 }
-
 ul.flashes li {
     background: #ffeaa7;
     border: 1px solid #fdcb6e;
@@ -262,3 +248,4 @@ ul.flashes li {
     border-radius: 8px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.2);
 }
+
