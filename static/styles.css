@@ -68,7 +68,6 @@ ul.navbar {
     gap: 15px;
     margin: 0;
     padding: 0;
-    overflow-wrap: anywhere;
 }
 
 ul.navbar li a {
@@ -111,8 +110,16 @@ ul.navbar li a:hover {
     }
 }
 
+/* Shared Containers */
+.container {
+    width: 90%;
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
 /* Forms and Containers */
-.volunteer-container, .venmo-container {
+.volunteer-container, .venmo-container, .signup-container {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -121,24 +128,21 @@ ul.navbar li a:hover {
     min-height: 80vh;
 }
 
-.volunteer-container h1, .venmo-container h1 {
+.volunteer-container h1, .venmo-container h1, .signup-container h1 {
     color: #d63031;
     margin-bottom: 20px;
 }
 
-.volunteer-container p {
+.volunteer-container p, .signup-container p {
     font-size: 1.2em;
     margin-bottom: 20px;
 }
 
 .signup-container {
-    display: flex;
+    flex-direction: row;
     flex-wrap: wrap;
-    gap: 2rem;
     justify-content: center;
-    margin: 2rem auto;
-    max-width: 1000px;
-    padding: 1rem;
+    gap: 2rem;
 }
 
 .signup-container > div {
@@ -150,16 +154,11 @@ ul.navbar li a:hover {
     box-sizing: border-box;
 }
 
-.signup-container h1 {
-    text-align: center;
-    color: #d63031;
-    margin-bottom: 20px;
-}
-
 .signup-container form {
     display: flex;
     flex-direction: column;
     gap: 15px;
+    width: 100%;
 }
 
 .signup-container label {
@@ -189,6 +188,20 @@ ul.navbar li a:hover {
     background-color: #019875;
 }
 
+table {
+    width: 90%;
+    margin: 20px auto;
+    border-collapse: collapse;
+}
+th, td {
+    border: 1px solid #ccc;
+    padding: 8px 12px;
+    text-align: center;
+}
+th {
+    background-color: #f5f5f5;
+}
+
 a {
     text-decoration: none;
     color: #0984e3;
@@ -203,24 +216,6 @@ footer {
     margin: 40px 0 20px;
     font-size: 0.9em;
     color: #636e72;
-}
-
-.gallery {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 15px;
-    margin-top: 20px;
-}
-
-.gallery img {
-    border-radius: 8px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-    transition: transform 0.3s;
-}
-
-.gallery img:hover {
-    transform: scale(1.05);
 }
 
 ul.flashes {
@@ -239,6 +234,24 @@ ul.flashes li {
     border-radius: 4px;
     color: #2d3436;
     font-weight: bold;
+}
+
+.gallery {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.gallery img {
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    transition: transform 0.3s;
+}
+
+.gallery img:hover {
+    transform: scale(1.05);
 }
 
 .venmo-qr {
