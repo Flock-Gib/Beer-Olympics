@@ -1,0 +1,57 @@
+<!-- Volunteer Sign-Up Page -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Food & Drink Volunteer Sign-Up</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <nav>
+      <div class="navbar-container">
+        <span class="logo">Gibs Beer Olympics</span>
+        <button class="hamburger" onclick="toggleNavbar()">☰</button>
+        <ul class="navbar" id="navbar">
+          <li><a href="/">Home</a></li>
+          <li><a href="/signup">Team Sign Up</a></li>
+          <li><a href="/venmo">Venmo Payment</a></li>
+          <li><a href="/volunteer">Volunteer Sign-Up</a></li>
+          <li><a href="/event">About the Event</a></li>
+          <li><a href="/admin">Admin</a></li>
+        </ul>
+      </div>
+    </nav>
+
+    <div class="volunteer-container">
+        <h1>Volunteer Sign-Up</h1>
+        <p>Help us make this event a success! Sign up to bring food, drinks, or help out.</p>
+
+        <form action="/volunteer" method="POST">
+            <label for="name">Name:</label>
+            <input type="text" id="name" name="name" required>
+
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" required>
+
+            <label for="phone">Phone (optional):</label>
+            <input type="text" id="phone" name="phone">
+
+            <label for="contribution">What you'll bring:</label>
+            <input type="text" id="contribution" name="contribution" required>
+
+            <button type="submit">Submit</button>
+        </form>
+    </div>
+
+    <footer>
+        <p>&copy; 2025 Gibs Juneteenth Beer Olympics</p>
+    </footer>
+
+    <script>
+        function toggleNavbar() {
+            document.getElementById("navbar").classList.toggle("show");
+        }
+    </script>
+</body>
+</html>

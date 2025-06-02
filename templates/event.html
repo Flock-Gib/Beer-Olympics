@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About the Event - Gibs Juneteenth Beer Olympics</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lobster&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/styles.css">
+    <style>
+        .event-header {
+            font-family: 'Lobster', cursive;
+            font-size: 3em;
+            text-align: center;
+            margin-top: 100px;
+            color: #d63031;
+            letter-spacing: 2px;
+        }
+
+        .event-details {
+            text-align: center;
+            margin: 40px auto;
+            font-size: 1.2em;
+            max-width: 700px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        .event-details p {
+            margin: 15px 0;
+        }
+
+        .event-details h2 {
+            color: #d63031;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <nav>
+      <div class="navbar-container">
+        <span class="logo">Gibs Beer Olympics</span>
+        <button class="hamburger" onclick="toggleNavbar()">☰</button>
+        <ul class="navbar" id="navbar">
+          <li><a href="/">Home</a></li>
+          <li><a href="/signup">Team Sign Up</a></li>
+          <li><a href="/venmo">Venmo Payment</a></li>
+          <li><a href="/volunteer">Volunteer Sign-Up</a></li>
+          <li><a href="/event">About the Event</a></li>
+          <li><a href="/admin">Admin</a></li>
+        </ul>
+      </div>
+    </nav>
+
+    <h1 class="event-header">Gibs Juneteenth Beer Olympics 2025</h1>
+
+    <div class="event-details">
+        <h2>Event Details</h2>
+        <p><strong>Date:</strong> Thursday, June 19th, 2025</p>
+        <p><strong>Time:</strong> 1:00 PM - Midnight</p>
+        <p><strong>Location:</strong> Found on the FB page or Invite Card</p>
+        <p><strong>Games:</strong> Cornhole, Flip Cup, Beer Pong, Team Chug, and more!</p>
+
+        <h2>About the Beer Olympics</h2>
+        <p>The Juneteenth Beer Olympics is a fun-filled day dedicated to celebrating the end of the school year, the start of summer, and the joy of spending time with friends. Come ready to compete, cheer, and make memories that last a lifetime. We can’t wait to see you there!</p>
+    </div>
+
+    <footer>
+        <p>&copy; 2025 Gibs Juneteenth Beer Olympics</p>
+    </footer>
+
+    <script>
+        function toggleNavbar() {
+            document.getElementById("navbar").classList.toggle("show");
+        }
+    </script>
+</body>
+</html>

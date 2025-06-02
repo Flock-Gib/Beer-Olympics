@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up - Gibs Juneteenth Beer Olympics</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <nav>
+      <div class="navbar-container">
+        <span class="logo">Gibs Beer Olympics</span>
+        <button class="hamburger" onclick="toggleNavbar()">☰</button>
+        <ul class="navbar" id="navbar">
+          <li><a href="/">Home</a></li>
+          <li><a href="/signup">Team Sign Up</a></li>
+          <li><a href="/venmo">Venmo Payment</a></li>
+          <li><a href="/volunteer">Volunteer Sign-Up</a></li>
+          <li><a href="/event">About the Event</a></li>
+          <li><a href="/admin">Admin</a></li>
+        </ul>
+      </div>
+    </nav>
+
+    <div class="volunteer-container">
+        <h1>Sign Up for Gibs Juneteenth Beer Olympics</h1>
+
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            <ul class="flashes">
+              {% for message in messages %}
+                <li>{{ message }}</li>
+              {% endfor %}
+            </ul>
+          {% endif %}
+        {% endwith %}
+
+        <form action="/signup" method="POST">
+            <label for="password">Event Password:</label>
+            <input type="password" id="password" name="password" required>
+
+            <label for="country">Team Country:</label>
+            <input type="text" id="country" name="country" required>
+
+            <label for="captain_name">Captain Name:</label>
+            <input type="text" id="captain_name" name="captain_name" required>
+
+            <label for="captain_email">Captain Email:</label>
+            <input type="email" id="captain_email" name="captain_email" required>
+
+            <label for="teammate_name">Teammate Name:</label>
+            <input type="text" id="teammate_name" name="teammate_name" required>
+
+            <button type="submit">Submit</button>
+        </form>
+    </div>
+
+    <footer>
+        <p>&copy; 2025 Gibs Juneteenth Beer Olympics</p>
+    </footer>
+
+    <script>
+        function toggleNavbar() {
+            document.getElementById("navbar").classList.toggle("show");
+        }
+    </script>
+</body>
+</html>

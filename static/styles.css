@@ -1,0 +1,141 @@
+/* Final Polished CSS for Juneteenth Beer Olympics - Centered Pages + Responsive Navbar (Fixed for Desktop) */
+
+@keyframes gradientFlow {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background: linear-gradient(-45deg, #ff9ff3, #feca57, #ff6b6b, #48dbfb);
+    background-size: 400% 400%;
+    animation: gradientFlow 15s ease infinite;
+    font-family: 'Arial', sans-serif;
+    color: #2d3436;
+    padding-top: 70px;
+}
+
+h1, h2, h3 {
+    text-align: center;
+    color: #d63031;
+    margin-top: 20px;
+}
+
+.navbar-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    background: rgba(0,0,0,0.6);
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000;
+    box-sizing: border-box;
+}
+
+.logo {
+    color: white;
+    font-weight: bold;
+    font-size: 1.5em;
+    white-space: nowrap;
+}
+
+.hamburger {
+    font-size: 2em;
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+    padding: 10px 20px;
+    display: none;
+}
+
+ul.navbar {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 15px;
+    margin: 0;
+    padding: 0;
+    overflow-wrap: anywhere;
+}
+
+ul.navbar li a {
+    color: white;
+    text-decoration: none;
+    font-weight: bold;
+    white-space: nowrap;
+    padding: 5px 8px;
+    font-size: 0.95em;
+}
+
+ul.navbar li a:hover {
+    text-decoration: underline;
+}
+
+@media (max-width: 1024px) {
+    .hamburger {
+        display: block;
+    }
+
+    ul.navbar {
+        flex-direction: column;
+        align-items: center;
+        display: none;
+        background: rgba(0,0,0,0.7);
+        padding: 10px;
+        position: absolute;
+        top: 60px;
+        right: 20px;
+        border-radius: 8px;
+        width: auto;
+    }
+
+    ul.navbar.show {
+        display: flex;
+    }
+
+    ul.navbar li a {
+        font-size: 1.1em;
+    }
+}
+
+/* Form and Page Styling (same as before) */
+.volunteer-container { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 100px 20px 40px; min-height: 80vh; }
+.volunteer-container h1 { color: #d63031; margin-bottom: 20px; }
+.volunteer-container p { font-size: 1.2em; margin-bottom: 20px; }
+
+form { background: rgba(255, 255, 255, 0.95); padding: 25px; border-radius: 8px; max-width: 500px; width: 90%; margin: 0 auto; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); box-sizing: border-box; display: flex; flex-direction: column; gap: 15px; }
+
+label { font-weight: bold; }
+
+input[type="text"], input[type="email"], input[type="password"], button { width: 100%; padding: 12px; border: 1px solid #dfe6e9; border-radius: 4px; box-sizing: border-box; }
+
+button { background-color: #00b894; color: white; font-weight: bold; cursor: pointer; transition: background-color 0.3s; }
+button:hover { background-color: #019875; }
+
+a { text-decoration: none; color: #0984e3; }
+a:hover { text-decoration: underline; }
+
+footer { text-align: center; margin: 40px 0 20px; font-size: 0.9em; color: #636e72; }
+
+.gallery { display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; margin-top: 20px; }
+.gallery img { border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.2); transition: transform 0.3s; }
+.gallery img:hover { transform: scale(1.05); }
+
+ul.flashes { list-style: none; padding: 0; margin: 20px auto; max-width: 500px; text-align: center; }
+ul.flashes li { background: #ffeaa7; border: 1px solid #fdcb6e; padding: 10px; margin-top: 5px; border-radius: 4px; color: #2d3436; font-weight: bold; }
+
+.venmo-container { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 100px 20px 40px; min-height: 80vh; }
+.venmo-qr { width: 300px; max-width: 90%; display: block; margin: 20px auto; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }

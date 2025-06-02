@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Gibs Beer Olympics</title>
+    <link rel="stylesheet" href="/static/styles.css">
+    <style>
+        table {
+            width: 90%;
+            margin: 20px auto;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #ccc;
+            padding: 8px 12px;
+            text-align: center;
+        }
+        th {
+            background-color: #f5f5f5;
+        }
+        .dashboard-navbar {
+            text-align: center;
+            margin: 20px 0;
+        }
+        .dashboard-navbar a {
+            color: #0984e3;
+            text-decoration: none;
+            font-weight: bold;
+            margin: 0 15px;
+        }
+        .dashboard-navbar a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="dashboard-navbar">
+        <a href="/">Home</a>
+        <a href="/logout">Logout</a>
+    </div>
+
+    <div class="volunteer-container">
+        <h1>Admin Dashboard</h1>
+
+        <h2>Team Signups</h2>
+        <table>
+          {% for row in signup_data %}
+            <tr>
+              {% for cell in row %}
+                <td>{{ cell }}</td>
+              {% endfor %}
+            </tr>
+          {% endfor %}
+        </table>
+
+        <h2>Volunteer Signups</h2>
+        <table>
+          {% for row in volunteer_data %}
+            <tr>
+              {% for cell in row %}
+                <td>{{ cell }}</td>
+              {% endfor %}
+            </tr>
+          {% endfor %}
+        </table>
+    </div>
+
+    <footer>
+        <p>&copy; 2025 Gibs Juneteenth Beer Olympics</p>
+    </footer>
+</body>
+</html>

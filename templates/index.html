@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gibs Juneteenth Beer Olympics</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <nav>
+      <div class="navbar-container">
+        <span class="logo">Gibs Beer Olympics</span>
+        <button class="hamburger" onclick="toggleNavbar()">☰</button>
+        <ul class="navbar" id="navbar">
+          <li><a href="/">Home</a></li>
+          <li><a href="/signup">Team Sign Up</a></li>
+          <li><a href="/venmo">Venmo Payment</a></li>
+          <li><a href="/volunteer">Volunteer Sign-Up</a></li>
+          <li><a href="/event">About the Event</a></li>
+          <li><a href="/admin">Admin</a></li>
+        </ul>
+      </div>
+    </nav>
+
+    <h1 style="margin-top: 100px; text-align: center; color: #d63031;">Welcome to Gibs Juneteenth Annual Beer Olympics!</h1>
+
+    <p style="text-align: center; max-width: 700px; margin: 20px auto; font-size: 1.2em;">
+        Join us in celebrating freedom, unity, and fun at the ultimate Beer Olympics event! Featuring games like Beer Pong, Flip Cup, Cornhole, and more.
+    </p>
+
+    <p style="text-align: center; font-size: 1.5em; margin: 30px 0;">
+        <strong>Countdown to the Games:</strong>
+    </p>
+
+    <div id="countdown" style="text-align: center; font-size: 2em; font-weight: bold; color: #d63031;"></div>
+
+    <div style="text-align: center; margin: 40px 0;">
+        <iframe style="border-radius:12px; max-width: 600px; width: 90%; height: 152px;" src="https://open.spotify.com/embed/playlist/3NmZ4NVPonD46RXwiJFi23?utm_source=generator" frameborder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+    </div>
+
+    <footer>
+        <p style="text-align: center;">Contact: gibsonst1993@gmail.com</p>
+        <p style="text-align: center;">&copy; 2025 Gibs Juneteenth Beer Olympics</p>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script>
+    function toggleNavbar() {
+        document.getElementById("navbar").classList.toggle("show");
+    }
+
+    function getNextEventDate() {
+        const now = new Date();
+        const year = now.getFullYear();
+        let eventDate = new Date(`${year}-06-19T13:00:00`);
+        if (now > eventDate) {
+            eventDate = new Date(`${year + 1}-06-19T13:00:00`);
+        }
+        return eventDate.getTime();
+    }
+
+    const eventDate = getNextEventDate();
+
+    const countdown = setInterval(function() {
+        const now = new Date().getTime();
+        const distance = eventDate - now;
+
+        const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+        document.getElementById("countdown").innerHTML =
+            days + "d " + hours + "h " + minutes + "m " + seconds + "s ";
+
+        if (distance < 0) {
+            clearInterval(countdown);
+            document.getElementById("countdown").innerHTML = "The Games Have Started!";
+        }
+    }, 1000);
+
+    // Confetti on page load
+    window.addEventListener('load', () => {
+        confetti({
+          particleCount: 100,
+          spread: 70,
+          origin: { y: 0.6 }
+        });
+    });
+    </script>
+</body>
+</html>

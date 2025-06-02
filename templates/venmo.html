@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Venmo Payment - Gibs Juneteenth Beer Olympics</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <nav>
+      <div class="navbar-container">
+        <span class="logo">Gibs Beer Olympics</span>
+        <button class="hamburger" onclick="toggleNavbar()">☰</button>
+        <ul class="navbar" id="navbar">
+          <li><a href="/">Home</a></li>
+          <li><a href="/signup">Team Sign Up</a></li>
+          <li><a href="/venmo">Venmo Payment</a></li>
+          <li><a href="/volunteer">Volunteer Sign-Up</a></li>
+          <li><a href="/event">About the Event</a></li>
+          <li><a href="/admin">Admin</a></li>
+        </ul>
+      </div>
+    </nav>
+
+    <div class="venmo-container">
+        <h1 style="margin-top: 100px; text-align: center; color: #d63031;">Venmo Payment</h1>
+        <p>Please send your $20 team registration fee via Venmo to:</p>
+        <h2>@Gibson-StJohn</h2>
+        <p>Or scan the QR code below:</p>
+        <img src="/static/photos/IMG_9295.PNG" alt="Venmo QR Code" class="venmo-qr">
+        <p>Once your payment is complete, your spot is confirmed!</p>
+    </div>
+
+    <footer>
+        <p style="text-align: center;">&copy; 2025 Gibs Juneteenth Beer Olympics</p>
+    </footer>
+
+    <script>
+        function toggleNavbar() {
+            document.getElementById("navbar").classList.toggle("show");
+        }
+    </script>
+</body>
+</html>
