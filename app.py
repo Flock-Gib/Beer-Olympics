@@ -18,6 +18,7 @@ creds = ServiceAccountCredentials.from_json_keyfile_name(creds_path, scope)
 client = gspread.authorize(creds)
 sheet_signup = client.open("Gibs Juneteenth Beer Olympics Signups").sheet1
 sheet_volunteer = client.open("Gibs Juneteenth Beer Olympics Volunteers").sheet1
+sheet_rsvp = client.open("Gibs Juneteenth Beer Olympics General RSVPs").sheet1
 
 # Admin credentials (from .env)
 ADMIN_USERNAME = os.getenv('ADMIN_USERNAME', 'admin')
@@ -51,6 +52,14 @@ def signup():
         return redirect(url_for('index'))
 
     return render_template('signup.html')
+
+@app.route('/rsvp', methods=['POST'])
+def rsvp():
+    name = request.form['guest_name']
+    timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    sheet_rsvp.append_row([timestamp, name])
+    flash(f'Thank you, {name}! Your RSVP has been received.')
+    return redirect(url_for('index'))
 
 @app.route('/volunteer', methods=['GET', 'POST'])
 def volunteer():
@@ -86,9 +95,12 @@ def dashboard():
     if not session.get('admin'):
         flash('Please log in as admin.')
         return redirect(url_for('admin'))
+
     signup_data = sheet_signup.get_all_values()
     volunteer_data = sheet_volunteer.get_all_values()
-    return render_template('dashboard.html', signup_data=signup_data, volunteer_data=volunteer_data)
+    rsvp_data = sheet_rsvp.get_all_values()
+
+    return render_template('dashboard.html', signup_data=signup_data, volunteer_data=volunteer_data, rsvp_data=rsvp_data)
 
 @app.route('/logout')
 def logout():
@@ -107,3 +119,4 @@ def event():
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port)
+
