@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Photo Gallery – Gibs Juneteenth Beer Olympics</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <nav>
+      <div class="navbar-container">
+        <span class="logo">🍺 Gibs Beer Olympics</span>
+        <button class="hamburger" aria-label="Toggle navigation" onclick="toggleNavbar()">☰</button>
+        <ul class="navbar" id="navbar">
+          <li><a href="/">Home</a></li>
+          <li><a href="/event">About the Event</a></li>
+          <li><a href="/rsvp">RSVP</a></li>
+          <li><a href="/signup">Team Sign Up</a></li>
+          <li><a href="/volunteer">Volunteer</a></li>
+          <li><a href="/gallery" class="active">Gallery</a></li>
+          <li><a href="/venmo">Venmo</a></li>
+          <li><a href="/admin">Admin</a></li>
+        </ul>
+      </div>
+    </nav>
+
+    <div class="page-container">
+        <h1>📸 Photo Gallery</h1>
+        <p class="page-subtitle">Share your memories from the Beer Olympics!</p>
+
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            <ul class="flashes" role="alert">
+              {% for message in messages %}
+                <li>{{ message }}</li>
+              {% endfor %}
+            </ul>
+          {% endif %}
+        {% endwith %}
+
+        <div class="upload-card">
+            <h2>Upload a Photo</h2>
+            <form action="/gallery" method="POST" enctype="multipart/form-data" novalidate id="upload-form">
+                <div class="form-group">
+                    <label for="uploader_name">Your Name <span class="optional">(optional)</span></label>
+                    <input type="text" id="uploader_name" name="uploader_name"
+                           placeholder="Your name" autocomplete="name">
+                </div>
+
+                <div class="form-group">
+                    <label for="caption">Caption <span class="optional">(optional)</span></label>
+                    <input type="text" id="caption" name="caption"
+                           placeholder="Add a fun caption...">
+                </div>
+
+                <div class="form-group">
+                    <label for="photo">Photo <span class="required">*</span></label>
+                    <div class="file-drop-zone" id="drop-zone">
+                        <span class="drop-icon">📁</span>
+                        <span id="file-label">Click or drag &amp; drop an image here</span>
+                        <input type="file" id="photo" name="photo" accept=".jpg,.jpeg,.png,.webp,.gif,.heic"
+                               required class="file-input" onchange="handleFileSelect(this)">
+                    </div>
+                    <p class="file-hint">Accepted: JPG, PNG, WEBP, GIF, HEIC · Max size: 16 MB</p>
+                </div>
+
+                <div id="preview-container" class="preview-hidden">
+                    <img id="photo-preview" src="#" alt="Preview">
+                </div>
+
+                <button type="submit" class="btn-primary">Upload Photo 📤</button>
+            </form>
+        </div>
+
+        {% if photos %}
+        <div class="gallery-grid">
+            {% for photo in photos %}
+            <div class="gallery-card">
+                <a href="{{ url_for('static', filename='uploads/' + photo.filename) }}"
+                   target="_blank" rel="noopener">
+                    <img src="{{ url_for('static', filename='uploads/' + photo.filename) }}"
+                         alt="{{ photo.caption or 'Beer Olympics photo' }}"
+                         loading="lazy">
+                </a>
+                <div class="gallery-caption">
+                    {% if photo.caption %}
+                        <p class="caption-text">{{ photo.caption }}</p>
+                    {% endif %}
+                    <p class="caption-meta">
+                        {% if photo.uploader_name %}by {{ photo.uploader_name }} · {% endif %}
+                        {{ photo.timestamp[:10] }}
+                    </p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-gallery">
+            <p>🏅 No photos yet — be the first to upload one!</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <footer>
+        <p>Contact: <a href="mailto:gibsonst1993@gmail.com">gibsonst1993@gmail.com</a></p>
+        <p>&copy; 2025 Gibs Juneteenth Beer Olympics</p>
+    </footer>
+
+    <script>
+        function toggleNavbar() {
+            document.getElementById("navbar").classList.toggle("show");
+        }
+
+        function handleFileSelect(input) {
+            const file = input.files[0];
+            if (!file) return;
+
+            document.getElementById('file-label').textContent = file.name;
+
+            if (file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const preview = document.getElementById('photo-preview');
+                    preview.src = e.target.result;
+                    document.getElementById('preview-container').classList.remove('preview-hidden');
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // Drag-and-drop support
+        const dropZone = document.getElementById('drop-zone');
+        const fileInput = document.getElementById('photo');
+
+        ['dragenter', 'dragover'].forEach(evt => {
+            dropZone.addEventListener(evt, e => {
+                e.preventDefault();
+                dropZone.classList.add('drag-over');
+            });
+        });
+
+        ['dragleave', 'drop'].forEach(evt => {
+            dropZone.addEventListener(evt, e => {
+                e.preventDefault();
+                dropZone.classList.remove('drag-over');
+            });
+        });
+
+        dropZone.addEventListener('drop', e => {
+            const dt = e.dataTransfer;
+            if (dt.files.length) {
+                fileInput.files = dt.files;
+                handleFileSelect(fileInput);
+            }
+        });
+    </script>
+</body>
+</html>

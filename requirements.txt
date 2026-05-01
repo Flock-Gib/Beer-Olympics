@@ -1,5 +1,4 @@
 Flask
-gspread
-oauth2client
 gunicorn
 python-dotenv
+Pillow

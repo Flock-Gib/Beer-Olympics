@@ -3,76 +3,93 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RSVP & Team Sign Up - Gibs Juneteenth Beer Olympics</title>
+    <title>Team Sign Up – Gibs Juneteenth Beer Olympics</title>
     <link rel="stylesheet" href="/static/styles.css">
 </head>
 <body>
     <nav>
       <div class="navbar-container">
-        <span class="logo">Gibs Beer Olympics</span>
-        <button class="hamburger" onclick="toggleNavbar()">☰</button>
+        <span class="logo">🍺 Gibs Beer Olympics</span>
+        <button class="hamburger" aria-label="Toggle navigation" onclick="toggleNavbar()">☰</button>
         <ul class="navbar" id="navbar">
           <li><a href="/">Home</a></li>
           <li><a href="/event">About the Event</a></li>
-          <li><a href="/signup">RSVP/Sign Up</a></li>
-          <li><a href="/venmo">Venmo Payment</a></li>
-          <li><a href="/volunteer">Volunteer Sign-Up</a></li>
+          <li><a href="/rsvp">RSVP</a></li>
+          <li><a href="/signup" class="active">Team Sign Up</a></li>
+          <li><a href="/volunteer">Volunteer</a></li>
+          <li><a href="/gallery">Gallery</a></li>
+          <li><a href="/venmo">Venmo</a></li>
           <li><a href="/admin">Admin</a></li>
         </ul>
       </div>
     </nav>
 
-    <div class="signup-container">
-        <div class="team-signup">
-            <h1>Team Sign Up</h1>
+    <div class="page-container">
+        <h1>Team Sign Up</h1>
 
-            <p class="highlighted-text">
-                Money must be sent and team creation must be done before <strong>June 16th</strong> in order to secure your spot!
-            </p>
-
-            {% with messages = get_flashed_messages() %}
-              {% if messages %}
-                <ul class="flashes">
-                  {% for message in messages %}
-                    <li>{{ message }}</li>
-                  {% endfor %}
-                </ul>
-              {% endif %}
-            {% endwith %}
-
-            <form action="/signup" method="POST">
-                <label for="password">Event Password:</label>
-                <input type="password" id="password" name="password" required>
-
-                <label for="country">Team Country:</label>
-                <input type="text" id="country" name="country" required>
-
-                <label for="captain_name">Captain Name:</label>
-                <input type="text" id="captain_name" name="captain_name" required>
-
-                <label for="captain_email">Captain Email:</label>
-                <input type="email" id="captain_email" name="captain_email" required>
-
-                <label for="teammate_name">Teammate Name:</label>
-                <input type="text" id="teammate_name" name="teammate_name" required>
-
-                <button type="submit">Sign Up Team</button>
-            </form>
+        {% if closed %}
+        <div class="alert alert-warning">
+            🚫 Signup is closed — all 16 team slots are filled!
         </div>
+        {% else %}
 
-        <div class="general-rsvp">
-            <h1>General RSVP</h1>
+        <p class="page-subtitle highlighted-text">
+            💳 Money must be sent and team registration must be completed before
+            <strong>June 16th</strong> to secure your spot!
+        </p>
 
-            <form action="/rsvp" method="POST">
-                <label for="guest_name">Your Name:</label>
-                <input type="text" id="guest_name" name="guest_name" placeholder="Enter your name" required>
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            <ul class="flashes" role="alert">
+              {% for message in messages %}
+                <li>{{ message }}</li>
+              {% endfor %}
+            </ul>
+          {% endif %}
+        {% endwith %}
 
-                <button type="submit">RSVP</button>
-            </form>
-        </div>
+        <form action="/signup" method="POST" novalidate>
+            <div class="form-group">
+                <label for="password">Event Password <span class="required">*</span></label>
+                <input type="password" id="password" name="password" required
+                       placeholder="Enter the event password">
+            </div>
+
+            <div class="form-group">
+                <label for="country">Team Country / Name <span class="required">*</span></label>
+                <input type="text" id="country" name="country" required
+                       placeholder="e.g. Team USA 🇺🇸">
+            </div>
+
+            <div class="form-group">
+                <label for="captain_name">Captain Name <span class="required">*</span></label>
+                <input type="text" id="captain_name" name="captain_name" required
+                       placeholder="Full name" autocomplete="name">
+            </div>
+
+            <div class="form-group">
+                <label for="captain_email">Captain Email <span class="required">*</span></label>
+                <input type="email" id="captain_email" name="captain_email" required
+                       placeholder="you@example.com" autocomplete="email">
+            </div>
+
+            <div class="form-group">
+                <label for="teammate_name">Teammate Name <span class="required">*</span></label>
+                <input type="text" id="teammate_name" name="teammate_name" required
+                       placeholder="Full name">
+            </div>
+
+            <button type="submit" class="btn-primary">Sign Up Team 🏆</button>
+        </form>
+
+        <p class="page-note">Not competing but still attending?
+            <a href="/rsvp">Submit a General RSVP</a> instead.
+        </p>
+        {% endif %}
     </div>
 
     <footer>
+        <p>Contact: <a href="mailto:gibsonst1993@gmail.com">gibsonst1993@gmail.com</a></p>
         <p>&copy; 2025 Gibs Juneteenth Beer Olympics</p>
     </footer>
 
@@ -83,6 +100,4 @@
     </script>
 </body>
 </html>
-
-
 
