@@ -6,3 +6,6 @@ __pycache__/
 data/*.db
 static/uploads/*
 !static/uploads/.gitkeep
+*.txt.bak
+cookies.txt
+/tmp/
