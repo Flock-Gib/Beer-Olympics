@@ -3,17 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Venmo Payment - Gibs Juneteenth Beer Olympics</title>
+    <title>Venmo Payment – Gibs Juneteenth Cornhole Tournament {{ event_year }}</title>
     <link rel="stylesheet" href="/static/styles.css">
 </head>
 <body>
     <nav>
       <div class="navbar-container">
-        <span class="logo">🍺 Gibs Beer Olympics</span>
+        <span class="logo">🎯 Gibs Cornhole Tournament</span>
         <button class="hamburger" aria-label="Toggle navigation" onclick="toggleNavbar()">☰</button>
         <ul class="navbar" id="navbar">
           <li><a href="/">Home</a></li>
           <li><a href="/event">About the Event</a></li>
+          <li><a href="/rules">Rules</a></li>
           <li><a href="/rsvp">RSVP</a></li>
           <li><a href="/signup">Team Sign Up</a></li>
           <li><a href="/volunteer">Volunteer</a></li>
@@ -34,7 +35,7 @@
     </div>
 
     <footer>
-        <p style="text-align: center;">&copy; 2025 Gibs Juneteenth Beer Olympics</p>
+        <p style="text-align: center;">&copy; {{ current_year }} Gibs Juneteenth Cornhole Tournament</p>
     </footer>
 
     <script>

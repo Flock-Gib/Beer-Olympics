@@ -3,17 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gibs Juneteenth Beer Olympics</title>
+    <title>Gibs Juneteenth Cornhole Tournament {{ event_year }}</title>
     <link rel="stylesheet" href="/static/styles.css">
 </head>
 <body>
     <nav>
       <div class="navbar-container">
-        <span class="logo">🍺 Gibs Beer Olympics</span>
+        <span class="logo">🎯 Gibs Cornhole Tournament</span>
         <button class="hamburger" aria-label="Toggle navigation" onclick="toggleNavbar()">☰</button>
         <ul class="navbar" id="navbar">
           <li><a href="/" class="active">Home</a></li>
           <li><a href="/event">About the Event</a></li>
+          <li><a href="/rules">Rules</a></li>
           <li><a href="/rsvp">RSVP</a></li>
           <li><a href="/signup">Team Sign Up</a></li>
           <li><a href="/volunteer">Volunteer</a></li>
@@ -35,22 +36,23 @@
     {% endwith %}
 
     <div class="hero">
-        <h1 class="hero-title">Welcome to Gibs Juneteenth Annual Beer Olympics! 🍺🏅</h1>
+        <h1 class="hero-title">Welcome to the Gibs Juneteenth Cornhole Tournament! 🎯🏆</h1>
         <p class="hero-subtitle">
-            Join us in celebrating freedom, unity, and fun at the ultimate Beer Olympics event!<br>
-            Featuring Beer Pong, Flip Cup, Cornhole, and more.
+            Celebrating freedom, unity, and summer fun on <strong>{{ event_date_str }}</strong>!<br>
+            Compete in our featured <strong>Cornhole Tournament</strong> — plus Beer Pong, Flip Cup, and more as free play.
         </p>
 
         <div class="cta-buttons">
             <a href="/rsvp" class="btn-primary">RSVP Now</a>
             <a href="/signup" class="btn-secondary">Register a Team</a>
+            <a href="/rules" class="btn-secondary">View Rules</a>
             <a href="/volunteer" class="btn-secondary">Volunteer</a>
         </div>
     </div>
 
     <div class="home-info">
         <div class="countdown-section">
-            <p class="countdown-label">⏳ Countdown to the Games</p>
+            <p class="countdown-label">⏳ Countdown to the Tournament</p>
             <div id="countdown" aria-live="polite"></div>
         </div>
 
@@ -60,13 +62,13 @@
                     frameborder="0" allowfullscreen=""
                     allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
                     loading="lazy"
-                    title="Beer Olympics Playlist"></iframe>
+                    title="Cornhole Tournament Playlist"></iframe>
         </div>
     </div>
 
     <footer>
         <p>Contact: <a href="mailto:gibsonst1993@gmail.com">gibsonst1993@gmail.com</a></p>
-        <p>&copy; 2025 Gibs Juneteenth Beer Olympics</p>
+        <p>&copy; {{ current_year }} Gibs Juneteenth Cornhole Tournament</p>
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
@@ -101,7 +103,7 @@
 
         if (distance < 0) {
             clearInterval(countdown);
-            document.getElementById("countdown").innerHTML = "🎉 The Games Have Started!";
+            document.getElementById("countdown").innerHTML = "🎉 The Tournament Has Started!";
         }
     }, 1000);
 

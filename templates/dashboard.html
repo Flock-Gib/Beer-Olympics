@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard – Gibs Beer Olympics</title>
+    <title>Admin Dashboard – Gibs Cornhole Tournament</title>
     <link rel="stylesheet" href="/static/styles.css">
     <style>
         .dashboard-header {
@@ -38,7 +38,7 @@
 <body style="padding-top: 80px;">
 
     <div class="dashboard-header">
-        <span class="logo">🍺 Gibs Beer Olympics — Admin</span>
+        <span class="logo">🎯 Gibs Cornhole Tournament — Admin</span>
         <div>
             <a href="/">Home</a>
             <a href="/logout">Logout</a>
@@ -143,7 +143,7 @@
             <table>
                 <thead>
                     <tr>
-                        <th>#</th><th>Timestamp</th><th>Country/Team</th>
+                        <th>#</th><th>Timestamp</th><th>Team Name</th>
                         <th>Captain</th><th>Email</th><th>Teammate</th>
                     </tr>
                 </thead>
@@ -208,7 +208,7 @@
     </div>
 
     <footer>
-        <p>&copy; 2025 Gibs Juneteenth Beer Olympics</p>
+        <p>&copy; {{ current_year }} Gibs Juneteenth Cornhole Tournament</p>
     </footer>
 </body>
 </html>
