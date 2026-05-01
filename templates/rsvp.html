@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RSVP – Gibs Juneteenth Beer Olympics</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <nav>
+      <div class="navbar-container">
+        <span class="logo">🍺 Gibs Beer Olympics</span>
+        <button class="hamburger" aria-label="Toggle navigation" onclick="toggleNavbar()">☰</button>
+        <ul class="navbar" id="navbar">
+          <li><a href="/">Home</a></li>
+          <li><a href="/event">About the Event</a></li>
+          <li><a href="/rsvp" class="active">RSVP</a></li>
+          <li><a href="/signup">Team Sign Up</a></li>
+          <li><a href="/volunteer">Volunteer</a></li>
+          <li><a href="/gallery">Gallery</a></li>
+          <li><a href="/venmo">Venmo</a></li>
+          <li><a href="/admin">Admin</a></li>
+        </ul>
+      </div>
+    </nav>
+
+    <div class="page-container">
+        <h1>RSVP for the Event</h1>
+        <p class="page-subtitle">Let us know you're coming so we can plan ahead!</p>
+
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            <ul class="flashes" role="alert">
+              {% for message in messages %}
+                <li>{{ message }}</li>
+              {% endfor %}
+            </ul>
+          {% endif %}
+        {% endwith %}
+
+        <form action="/rsvp" method="POST" novalidate>
+            <div class="form-group">
+                <label for="guest_name">Your Name <span class="required">*</span></label>
+                <input type="text" id="guest_name" name="guest_name" required
+                       placeholder="First and Last Name" autocomplete="name">
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email <span class="optional">(optional)</span></label>
+                <input type="email" id="email" name="email"
+                       placeholder="you@example.com" autocomplete="email">
+            </div>
+
+            <div class="form-group">
+                <label for="status">Attendance Status <span class="required">*</span></label>
+                <select id="status" name="status" required>
+                    <option value="attending">✅ Attending</option>
+                    <option value="not_attending">❌ Not Attending</option>
+                    <option value="maybe">🤔 Maybe</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="guests">Number of Additional Guests <span class="optional">(optional)</span></label>
+                <input type="number" id="guests" name="guests" min="0" max="20"
+                       placeholder="0" value="0">
+            </div>
+
+            <div class="form-group">
+                <label for="notes">Notes / Questions <span class="optional">(optional)</span></label>
+                <textarea id="notes" name="notes" rows="3"
+                          placeholder="Dietary restrictions, questions, etc."></textarea>
+            </div>
+
+            <button type="submit" class="btn-primary">Submit RSVP 🍺</button>
+        </form>
+    </div>
+
+    <footer>
+        <p>Contact: <a href="mailto:gibsonst1993@gmail.com">gibsonst1993@gmail.com</a></p>
+        <p>&copy; 2025 Gibs Juneteenth Beer Olympics</p>
+    </footer>
+
+    <script>
+        function toggleNavbar() {
+            document.getElementById("navbar").classList.toggle("show");
+        }
+    </script>
+</body>
+</html>

@@ -3,82 +3,207 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard - Gibs Beer Olympics</title>
+    <title>Admin Dashboard – Gibs Beer Olympics</title>
     <link rel="stylesheet" href="/static/styles.css">
     <style>
-        table {
-            width: 90%;
-            margin: 20px auto;
-            border-collapse: collapse;
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            padding: 20px 40px;
+            background: rgba(0,0,0,0.6);
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            z-index: 1000;
         }
-        th, td {
-            border: 1px solid #ccc;
-            padding: 8px 12px;
-            text-align: center;
-        }
-        th {
-            background-color: #f5f5f5;
-        }
-        .dashboard-navbar {
-            text-align: center;
-            margin: 20px 0;
-        }
-        .dashboard-navbar a {
-            color: #0984e3;
-            text-decoration: none;
-            font-weight: bold;
-            margin: 0 15px;
-        }
-        .dashboard-navbar a:hover {
-            text-decoration: underline;
-        }
+        .dashboard-header .logo { color: white; font-weight: bold; font-size: 1.3em; }
+        .dashboard-header a { color: #ffeaa7; font-weight: bold; text-decoration: none; margin-left: 20px; }
+        .dashboard-header a:hover { text-decoration: underline; }
+        .dash-section { margin: 20px 0 40px; }
+        .dash-section h2 { color: #d63031; margin-bottom: 10px; }
+        .section-actions { margin-bottom: 10px; }
+        .section-actions a { font-size: 0.9em; }
+        .badge { display: inline-block; background: #d63031; color: white; border-radius: 12px;
+                 padding: 2px 10px; font-size: 0.8em; margin-left: 8px; vertical-align: middle; }
+        .status-attending { color: #00b894; font-weight: bold; }
+        .status-not_attending { color: #d63031; font-weight: bold; }
+        .status-maybe { color: #fdcb6e; font-weight: bold; }
+        .thumb { width: 80px; height: 60px; object-fit: cover; border-radius: 4px; }
+        .empty-row td { color: #999; font-style: italic; }
+        .table-wrap { overflow-x: auto; }
     </style>
 </head>
-<body>
+<body style="padding-top: 80px;">
 
-    <div class="dashboard-navbar">
-        <a href="/">Home</a>
-        <a href="/logout">Logout</a>
+    <div class="dashboard-header">
+        <span class="logo">🍺 Gibs Beer Olympics — Admin</span>
+        <div>
+            <a href="/">Home</a>
+            <a href="/logout">Logout</a>
+        </div>
     </div>
 
-    <div class="volunteer-container">
-        <h1>Admin Dashboard</h1>
-
-        <h2>Team Signups</h2>
-        <table>
-          {% for row in signup_data %}
-            <tr>
-              {% for cell in row %}
-                <td>{{ cell }}</td>
-              {% endfor %}
-            </tr>
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <ul class="flashes" role="alert" style="margin-top: 10px;">
+          {% for message in messages %}
+            <li>{{ message }}</li>
           {% endfor %}
-        </table>
+        </ul>
+      {% endif %}
+    {% endwith %}
 
-        <h2>Volunteer Signups</h2>
-        <table>
-          {% for row in volunteer_data %}
-            <tr>
-              {% for cell in row %}
-                <td>{{ cell }}</td>
-              {% endfor %}
-            </tr>
-          {% endfor %}
-        </table>
+    <div class="container">
 
-        <h2>General RSVPs</h2>
-        <table>
-          <tr>
-            <th>Timestamp</th>
-            <th>Name</th>
-          </tr>
-          {% for row in rsvp_data %}
-            <tr>
-              <td>{{ row[0] }}</td>
-              <td>{{ row[1] }}</td>
-            </tr>
-          {% endfor %}
-        </table>
+        <!-- RSVPs -->
+        <div class="dash-section">
+            <h2>RSVPs <span class="badge">{{ rsvps|length }}</span></h2>
+            <div class="section-actions">
+                <a href="/export/rsvp">⬇ Export CSV</a>
+            </div>
+            <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th><th>Timestamp</th><th>Name</th><th>Email</th>
+                        <th>Status</th><th>Guests</th><th>Notes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% if rsvps %}
+                  {% for r in rsvps %}
+                  <tr>
+                    <td>{{ r.id }}</td>
+                    <td>{{ r.timestamp }}</td>
+                    <td>{{ r.name }}</td>
+                    <td>{{ r.email or '—' }}</td>
+                    <td class="status-{{ r.status }}">
+                        {% if r.status == 'attending' %}✅ Attending
+                        {% elif r.status == 'not_attending' %}❌ Not Attending
+                        {% else %}🤔 Maybe{% endif %}
+                    </td>
+                    <td>{{ r.guests }}</td>
+                    <td>{{ r.notes or '—' }}</td>
+                  </tr>
+                  {% endfor %}
+                {% else %}
+                  <tr class="empty-row"><td colspan="7">No RSVPs yet.</td></tr>
+                {% endif %}
+                </tbody>
+            </table>
+            </div>
+        </div>
+
+        <!-- Volunteers -->
+        <div class="dash-section">
+            <h2>Volunteers <span class="badge">{{ volunteers|length }}</span></h2>
+            <div class="section-actions">
+                <a href="/export/volunteers">⬇ Export CSV</a>
+            </div>
+            <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th><th>Timestamp</th><th>Name</th><th>Email</th>
+                        <th>Phone</th><th>Category</th><th>Item</th><th>Qty</th><th>Notes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% if volunteers %}
+                  {% for v in volunteers %}
+                  <tr>
+                    <td>{{ v.id }}</td>
+                    <td>{{ v.timestamp }}</td>
+                    <td>{{ v.name }}</td>
+                    <td>{{ v.email or '—' }}</td>
+                    <td>{{ v.phone or '—' }}</td>
+                    <td>{{ v.category or '—' }}</td>
+                    <td>{{ v.item_description }}</td>
+                    <td>{{ v.quantity or '—' }}</td>
+                    <td>{{ v.notes or '—' }}</td>
+                  </tr>
+                  {% endfor %}
+                {% else %}
+                  <tr class="empty-row"><td colspan="9">No volunteer signups yet.</td></tr>
+                {% endif %}
+                </tbody>
+            </table>
+            </div>
+        </div>
+
+        <!-- Team Signups -->
+        <div class="dash-section">
+            <h2>Team Signups <span class="badge">{{ teams|length }}</span></h2>
+            <div class="section-actions">
+                <a href="/export/teams">⬇ Export CSV</a>
+            </div>
+            <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th><th>Timestamp</th><th>Country/Team</th>
+                        <th>Captain</th><th>Email</th><th>Teammate</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% if teams %}
+                  {% for t in teams %}
+                  <tr>
+                    <td>{{ t.id }}</td>
+                    <td>{{ t.timestamp }}</td>
+                    <td>{{ t.country }}</td>
+                    <td>{{ t.captain_name }}</td>
+                    <td>{{ t.captain_email or '—' }}</td>
+                    <td>{{ t.teammate_name }}</td>
+                  </tr>
+                  {% endfor %}
+                {% else %}
+                  <tr class="empty-row"><td colspan="6">No teams registered yet.</td></tr>
+                {% endif %}
+                </tbody>
+            </table>
+            </div>
+        </div>
+
+        <!-- Photos -->
+        <div class="dash-section">
+            <h2>Photos <span class="badge">{{ photos|length }}</span></h2>
+            <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th><th>Thumbnail</th><th>Timestamp</th>
+                        <th>Uploader</th><th>Caption</th><th>Filename</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% if photos %}
+                  {% for p in photos %}
+                  <tr>
+                    <td>{{ p.id }}</td>
+                    <td>
+                        <a href="{{ url_for('static', filename='uploads/' + p.filename) }}"
+                           target="_blank" rel="noopener">
+                            <img class="thumb"
+                                 src="{{ url_for('static', filename='uploads/' + p.filename) }}"
+                                 alt="photo {{ p.id }}">
+                        </a>
+                    </td>
+                    <td>{{ p.timestamp }}</td>
+                    <td>{{ p.uploader_name or 'Anonymous' }}</td>
+                    <td>{{ p.caption or '—' }}</td>
+                    <td><code>{{ p.filename }}</code></td>
+                  </tr>
+                  {% endfor %}
+                {% else %}
+                  <tr class="empty-row"><td colspan="6">No photos uploaded yet.</td></tr>
+                {% endif %}
+                </tbody>
+            </table>
+            </div>
+        </div>
 
     </div>
 
@@ -87,3 +212,4 @@
     </footer>
 </body>
 </html>
+
