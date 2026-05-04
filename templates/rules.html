@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cornhole Rules – Gibs Juneteenth Cornhole Tournament {{ event_year }}</title>
+    <link rel="stylesheet" href="/static/styles.css">
+    <style>
+        .rules-container {
+            max-width: 740px;
+            margin: 0 auto;
+            padding: 40px 20px 60px;
+        }
+
+        .rules-card {
+            background: rgba(255, 255, 255, 0.96);
+            border-radius: 12px;
+            padding: 32px 36px;
+            box-shadow: 0 6px 24px rgba(0, 0, 0, 0.12);
+            margin-bottom: 28px;
+        }
+
+        .rules-card h2 {
+            color: #d63031;
+            border-bottom: 2px solid #ffeaa7;
+            padding-bottom: 8px;
+            margin-bottom: 16px;
+        }
+
+        .rules-card ul {
+            padding-left: 20px;
+            margin: 0;
+        }
+
+        .rules-card ul li {
+            margin-bottom: 10px;
+            line-height: 1.6;
+        }
+
+        .rules-card p {
+            line-height: 1.7;
+            margin: 0 0 12px;
+        }
+
+        .rules-badge {
+            display: inline-block;
+            background: #00b894;
+            color: white;
+            font-weight: 700;
+            font-size: 0.82em;
+            padding: 3px 10px;
+            border-radius: 20px;
+            margin-left: 6px;
+            vertical-align: middle;
+        }
+    </style>
+</head>
+<body>
+    <nav>
+      <div class="navbar-container">
+        <span class="logo">🎯 Gibs Cornhole Tournament</span>
+        <button class="hamburger" aria-label="Toggle navigation" onclick="toggleNavbar()">☰</button>
+        <ul class="navbar" id="navbar">
+          <li><a href="/">Home</a></li>
+          <li><a href="/event">About the Event</a></li>
+          <li><a href="/rules" class="active">Rules</a></li>
+          <li><a href="/rsvp">RSVP</a></li>
+          <li><a href="/signup">Team Sign Up</a></li>
+          <li><a href="/volunteer">Volunteer</a></li>
+          <li><a href="/gallery">Gallery</a></li>
+          <li><a href="/venmo">Venmo</a></li>
+          <li><a href="/admin">Admin</a></li>
+        </ul>
+      </div>
+    </nav>
+
+    <div class="rules-container">
+        <h1 style="text-align:center; margin-bottom: 6px;">🎯 Official Cornhole Rules</h1>
+        <p style="text-align:center; color:#555; margin-bottom:30px;">
+            Gibs Juneteenth Cornhole Tournament — {{ event_date_str }}
+        </p>
+
+        <div class="rules-card">
+            <h2>Equipment &amp; Setup</h2>
+            <ul>
+                <li>Each board is <strong>2 ft × 4 ft</strong> with a <strong>6-inch hole</strong> centered 9 inches from the top.</li>
+                <li>The hole is elevated <strong>12 inches</strong> off the ground at the front edge.</li>
+                <li>Boards are placed <strong>27 feet</strong> apart (front edge to front edge) on flat ground.</li>
+                <li>Each team uses <strong>4 bags</strong> of a single color (corn-filled, ~1 lb each).</li>
+            </ul>
+        </div>
+
+        <div class="rules-card">
+            <h2>Teams &amp; Players</h2>
+            <ul>
+                <li>Teams consist of exactly <strong>2 players</strong>.</li>
+                <li>In doubles play, one player from each team stands at each board, facing their partner.</li>
+                <li>Partners always throw toward the opposite board.</li>
+            </ul>
+        </div>
+
+        <div class="rules-card">
+            <h2>Gameplay</h2>
+            <ul>
+                <li>A coin flip determines which team throws first.</li>
+                <li>Players alternate throwing bags — one team member throws, then the opposing player throws, continuing until all 8 bags are thrown (4 per side).</li>
+                <li>Players must stay behind the <strong>front edge of the board</strong> (the pitcher's box) when releasing a bag.</li>
+                <li>Bags must be thrown in an underhand motion.</li>
+                <li>A bag that bounces off the ground and lands on the board <strong>does not count</strong> and is removed before scoring.</li>
+            </ul>
+        </div>
+
+        <div class="rules-card">
+            <h2>Scoring</h2>
+            <ul>
+                <li><strong>Cornhole (hole-in):</strong> <span class="rules-badge">3 pts</span> — bag goes through the hole.</li>
+                <li><strong>Woody (on the board):</strong> <span class="rules-badge">1 pt</span> — bag lands and stays on the board surface.</li>
+                <li><strong>Cancellation scoring</strong> is used: subtract the lower team's points from the higher team's points each round. Only one team scores per round.</li>
+                <li>Example: Team A scores 5, Team B scores 3 → Team A earns <strong>2 points</strong> that round.</li>
+            </ul>
+        </div>
+
+        <div class="rules-card">
+            <h2>Winning</h2>
+            <ul>
+                <li>The first team to reach or exceed <strong>21 points</strong> wins the game.</li>
+                <li>You do <strong>not</strong> need to win by 2 — hitting 21 exactly or going over wins.</li>
+                <li>Tournament uses a <strong>single-elimination bracket</strong>. Win your match to advance; lose and you're out.</li>
+                <li>All bracket matches are <strong>best-of-one game</strong> except the Final, which is <strong>best-of-three</strong>.</li>
+            </ul>
+        </div>
+
+        <div class="rules-card">
+            <h2>Fouls &amp; Sportsmanship</h2>
+            <ul>
+                <li>Stepping past the front edge of the board while releasing = <strong>foul</strong> (bag is removed).</li>
+                <li>Distracting or taunting opponents is unsportsmanlike. Repeated violations may result in a forfeit at the tournament director's discretion.</li>
+                <li>Bags may <strong>not</strong> be moved or touched until the round is fully scored.</li>
+                <li>Disputes are settled by the <strong>tournament director</strong> — their decision is final.</li>
+            </ul>
+        </div>
+
+        <div class="rules-card">
+            <h2>Other Games (Free Play)</h2>
+            <p>While cornhole is the featured tournament game, the following are available as <strong>free-play</strong> activities throughout the day at your convenience:</p>
+            <ul>
+                <li>🍺 Beer Pong</li>
+                <li>🥤 Flip Cup</li>
+                <li>🤝 Team Chug</li>
+                <li>🎉 And more!</li>
+            </ul>
+            <p style="margin-top:12px; font-size:0.9em; color:#888;">
+                Please drink responsibly. No one under 21 is permitted to consume alcohol.
+            </p>
+        </div>
+    </div>
+
+    <footer>
+        <p>Contact: <a href="mailto:gibsonst1993@gmail.com">gibsonst1993@gmail.com</a></p>
+        <p>&copy; {{ current_year }} Gibs Juneteenth Cornhole Tournament</p>
+    </footer>
+
+    <script>
+        function toggleNavbar() {
+            document.getElementById("navbar").classList.toggle("show");
+        }
+    </script>
+</body>
+</html>

@@ -11,6 +11,10 @@ import io
 from werkzeug.utils import secure_filename
 from dotenv import load_dotenv
 
+# ── Event constants ──────────────────────────────────────────────────────────
+EVENT_MONTH = 6   # June
+EVENT_DAY   = 19  # Juneteenth
+
 # Load environment variables
 load_dotenv()
 
@@ -85,7 +89,7 @@ init_db()
 
 # ── Admin credentials ───────────────────────────────────────────────────────
 ADMIN_USERNAME = os.getenv('ADMIN_USERNAME', 'admin')
-ADMIN_PASSWORD = os.getenv('ADMIN_PASSWORD', 'Flock1234!')
+ADMIN_PASSWORD = os.getenv('ADMIN_PASSWORD', '')
 ADMIN_TOKEN = os.getenv('ADMIN_TOKEN', '')
 
 # ── Helpers ─────────────────────────────────────────────────────────────────
@@ -109,6 +113,21 @@ def admin_required():
     return None
 
 
+# ── Template context ─────────────────────────────────────────────────────────
+
+@app.context_processor
+def inject_event_info():
+    """Inject dynamic year and event date string into every template."""
+    now = datetime.datetime.now()
+    today = now.date()
+    year = today.year
+    candidate = datetime.date(year, EVENT_MONTH, EVENT_DAY)
+    if today > candidate:
+        year += 1
+    event_date_str = datetime.date(year, EVENT_MONTH, EVENT_DAY).strftime('%B %-d, %Y')
+    return dict(current_year=today.year, event_year=year, event_date_str=event_date_str)
+
+
 # ── Routes ──────────────────────────────────────────────────────────────────
 
 @app.route('/')
@@ -122,7 +141,7 @@ def signup():
         team_count = conn.execute('SELECT COUNT(*) FROM teams').fetchone()[0]
 
     if team_count >= 16:
-        flash('Signup is closed — all 16 team slots are filled!')
+        flash('Signup is closed — all 16 cornhole team slots are filled!')
         return render_template('signup.html', closed=True)
 
     if request.method == 'POST':
@@ -343,6 +362,11 @@ def export_teams():
 
 
 # ── Misc pages ───────────────────────────────────────────────────────────────
+
+@app.route('/rules')
+def rules():
+    return render_template('rules.html')
+
 
 @app.route('/venmo')
 def venmo():

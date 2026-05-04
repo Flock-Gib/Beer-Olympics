@@ -3,17 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Team Sign Up – Gibs Juneteenth Beer Olympics</title>
+    <title>Team Sign Up – Gibs Juneteenth Cornhole Tournament {{ event_year }}</title>
     <link rel="stylesheet" href="/static/styles.css">
 </head>
 <body>
     <nav>
       <div class="navbar-container">
-        <span class="logo">🍺 Gibs Beer Olympics</span>
+        <span class="logo">🎯 Gibs Cornhole Tournament</span>
         <button class="hamburger" aria-label="Toggle navigation" onclick="toggleNavbar()">☰</button>
         <ul class="navbar" id="navbar">
           <li><a href="/">Home</a></li>
           <li><a href="/event">About the Event</a></li>
+          <li><a href="/rules">Rules</a></li>
           <li><a href="/rsvp">RSVP</a></li>
           <li><a href="/signup" class="active">Team Sign Up</a></li>
           <li><a href="/volunteer">Volunteer</a></li>
@@ -25,17 +26,22 @@
     </nav>
 
     <div class="page-container">
-        <h1>Team Sign Up</h1>
+        <h1>Cornhole Team Sign Up</h1>
 
         {% if closed %}
         <div class="alert alert-warning">
-            🚫 Signup is closed — all 16 team slots are filled!
+            🚫 Signup is closed — all 16 cornhole team slots are filled!
         </div>
         {% else %}
 
         <p class="page-subtitle highlighted-text">
             💳 Money must be sent and team registration must be completed before
             <strong>June 16th</strong> to secure your spot!
+        </p>
+
+        <p class="page-subtitle" style="max-width:520px;">
+            Teams are exactly <strong>2 players</strong> (a captain + one teammate).
+            Register below to enter the single-elimination bracket.
         </p>
 
         {% with messages = get_flashed_messages() %}
@@ -56,9 +62,9 @@
             </div>
 
             <div class="form-group">
-                <label for="country">Team Country / Name <span class="required">*</span></label>
+                <label for="country">Team Name <span class="required">*</span></label>
                 <input type="text" id="country" name="country" required
-                       placeholder="e.g. Team USA 🇺🇸">
+                       placeholder="e.g. The Bag Slingers 🎯">
             </div>
 
             <div class="form-group">
@@ -79,7 +85,7 @@
                        placeholder="Full name">
             </div>
 
-            <button type="submit" class="btn-primary">Sign Up Team 🏆</button>
+            <button type="submit" class="btn-primary">Register Team 🎯</button>
         </form>
 
         <p class="page-note">Not competing but still attending?
@@ -90,7 +96,7 @@
 
     <footer>
         <p>Contact: <a href="mailto:gibsonst1993@gmail.com">gibsonst1993@gmail.com</a></p>
-        <p>&copy; 2025 Gibs Juneteenth Beer Olympics</p>
+        <p>&copy; {{ current_year }} Gibs Juneteenth Cornhole Tournament</p>
     </footer>
 
     <script>
@@ -100,4 +106,3 @@
     </script>
 </body>
 </html>
-
