@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard – Gibs Cornhole Tournament</title>
+    <title>Admin Dashboard – {{ event_name }}</title>
     <link rel="stylesheet" href="/static/styles.css">
     <style>
         .dashboard-header {
@@ -38,7 +38,7 @@
 <body style="padding-top: 80px;">
 
     <div class="dashboard-header">
-        <span class="logo">🎯 Gibs Cornhole Tournament — Admin</span>
+        <span class="logo">🎯 Juneteenth at Gibby's — Admin</span>
         <div>
             <a href="/admin/bracket">🏆 Bracket</a>
             <a href="/">Home</a>
@@ -209,7 +209,7 @@
     </div>
 
     <footer>
-        <p>&copy; {{ current_year }} Gibs Juneteenth Cornhole Tournament</p>
+        <p>&copy; {{ current_year }} {{ event_name }}</p>
     </footer>
 </body>
 </html>

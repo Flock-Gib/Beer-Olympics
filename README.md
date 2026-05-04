@@ -1,10 +1,11 @@
-# 🍺 Gibs Juneteenth Beer Olympics
+# 🍺 Juneteenth at Gibby's
 
-A fun event website for the annual Gibs Juneteenth Beer Olympics featuring:
+A fun event website for the annual **Juneteenth at Gibby's** celebration featuring:
 - 🎉 RSVP collection
 - 🏆 Dynamic single-elimination cornhole tournament bracket
 - 🙌 Volunteer "bring items" signup
 - 📸 Photo gallery with uploads
+- 💵 Team entry fee display ($20/team) and Venmo donation support
 
 ---
 
@@ -188,4 +189,17 @@ Set all environment variables in your hosting provider's dashboard (not in a com
 
 ## License
 
-© 2025 Gibs Juneteenth Beer Olympics. All rights reserved.
+© 2025 Juneteenth at Gibby's. All rights reserved.
+
+---
+
+## Team Entry &amp; Donations
+
+| Type | Amount | Where to Pay |
+|------|--------|-------------|
+| **Team Entry** | **$20 per team** (2 players) | Venmo [@Gibson-StJohn](https://venmo.com/Gibson-StJohn) |
+| **Supply Donation** | $5 / $10 / $20 (suggested) | Venmo [@Gibson-StJohn](https://venmo.com/Gibson-StJohn) |
+
+Teams must pay and complete registration by **June 16th** to secure a spot.
+Supply donations (ice, cups, charcoal, etc.) are welcome from anyone — players and non-players alike!
+

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cornhole Rules – Gibs Juneteenth Cornhole Tournament {{ event_year }}</title>
+    <title>Cornhole Rules – {{ event_name }} {{ event_year }}</title>
     <link rel="stylesheet" href="/static/styles.css">
     <style>
         .rules-container {
@@ -58,7 +58,7 @@
 <body>
     <nav>
       <div class="navbar-container">
-        <span class="logo">🎯 Gibs Cornhole Tournament</span>
+        <span class="logo">🎯 Juneteenth at Gibby's</span>
         <button class="hamburger" aria-label="Toggle navigation" onclick="toggleNavbar()">☰</button>
         <ul class="navbar" id="navbar">
           <li><a href="/">Home</a></li>
@@ -78,7 +78,7 @@
     <div class="rules-container">
         <h1 style="text-align:center; margin-bottom: 6px;">🎯 Official Cornhole Rules</h1>
         <p style="text-align:center; color:#555; margin-bottom:30px;">
-            Gibs Juneteenth Cornhole Tournament — {{ event_date_str }}
+            {{ event_name }} — {{ event_date_str }}
         </p>
 
         <div class="rules-card">
@@ -158,7 +158,7 @@
 
     <footer>
         <p>Contact: <a href="mailto:gibsonst1993@gmail.com">gibsonst1993@gmail.com</a></p>
-        <p>&copy; {{ current_year }} Gibs Juneteenth Cornhole Tournament</p>
+        <p>&copy; {{ current_year }} {{ event_name }}</p>
     </footer>
 
     <script>
