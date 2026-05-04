@@ -2,7 +2,7 @@
 
 A fun event website for the annual Gibs Juneteenth Beer Olympics featuring:
 - 🎉 RSVP collection
-- 🏆 Team registration
+- 🏆 Dynamic single-elimination cornhole tournament bracket
 - 🙌 Volunteer "bring items" signup
 - 📸 Photo gallery with uploads
 
@@ -88,6 +88,32 @@ Both locations are excluded from git via `.gitignore`.
 | `rsvp` | General RSVP records |
 | `volunteer` | Volunteer "bring items" signups |
 | `photos` | Photo upload metadata |
+| `tournament` | Current bracket version and locked flag |
+| `matches` | Individual match records with seeds, scores, and winners |
+
+---
+
+## Tournament Bracket
+
+### How it works
+
+The bracket is **single-elimination** and **auto-generates dynamically**:
+
+1. **Auto-generation** — The bracket appears as soon as ≥ 2 teams sign up and updates automatically as more teams join (no page refresh needed on public `/bracket`).
+2. **Any team count** — Works with any number of teams ≥ 2. Byes are automatically added to pad to the next power of two and are handled by auto-advancing the real team.
+3. **Lock on first result** — The moment an admin records the first match winner, the bracket is **locked**. New teams can no longer be auto-inserted (this prevents changing matchups mid-tournament). A clear message is shown on the signup page.
+4. **Admin reset** — The admin can click **"Reset & Regenerate"** in the bracket management panel to clear all results, unlock the bracket, and regenerate it from the current team list.
+
+### Round naming
+
+Round names are determined automatically based on bracket size:
+
+| Rounds from end | Label |
+|----------------|-------|
+| 0 | Final |
+| 1 | Semifinal |
+| 2 | Quarterfinal |
+| 3+ | Round N |
 
 ---
 
@@ -101,6 +127,14 @@ The dashboard shows:
 - All team registrations
 - All uploaded photos (with thumbnails)
 
+### Bracket management (admin only)
+
+Visit `/admin/bracket` to:
+- View the current bracket with all match states
+- **Set a winner** for any match with both teams present (optionally enter scores)
+- **Change a winner** — downstream placements are automatically cleared and recalculated
+- **Reset & Regenerate** — clears all results, unlocks the bracket, and rebuilds from the current team list
+
 ### CSV Exports (admin-only)
 
 | Endpoint | Data |
@@ -108,6 +142,7 @@ The dashboard shows:
 | `/export/rsvp` | All RSVPs as CSV |
 | `/export/volunteers` | All volunteer signups as CSV |
 | `/export/teams` | All team signups as CSV |
+| `/export/bracket` | All bracket matches with scores and winners as CSV |
 
 ---
 
@@ -116,14 +151,17 @@ The dashboard shows:
 | Route | Description |
 |-------|-------------|
 | `/` | Home page with countdown |
+| `/bracket` | Public tournament bracket (read-only, mobile-friendly) |
 | `/rsvp` | General RSVP form |
-| `/signup` | Team registration form |
+| `/signup` | Team registration form (open while bracket is unlocked) |
 | `/volunteer` | Volunteer "bring items" form |
 | `/gallery` | Photo gallery + upload |
+| `/rules` | Official cornhole rules |
 | `/event` | Event details |
 | `/venmo` | Payment info |
 | `/admin` | Admin login |
 | `/dashboard` | Admin dashboard (protected) |
+| `/admin/bracket` | Admin bracket management (protected) |
 
 ---
 
