@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bracket Management – Admin – Gibs Cornhole Tournament</title>
+    <link rel="stylesheet" href="/static/styles.css">
+    <style>
+        /* ── Admin header ───────────────────────────────── */
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            padding: 14px 28px;
+            background: rgba(0,0,0,0.7);
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            z-index: 1000;
+        }
+        .dashboard-header .logo { color: white; font-weight: bold; font-size: 1.2em; }
+        .dashboard-header a {
+            color: #ffeaa7; font-weight: bold;
+            text-decoration: none; margin-left: 16px;
+        }
+        .dashboard-header a:hover { text-decoration: underline; }
+
+        /* ── Page layout ────────────────────────────────── */
+        .bracket-admin { max-width: 1300px; margin: 0 auto; padding: 20px 16px 60px; }
+        .bracket-admin h1 { text-align: center; margin-bottom: 6px; }
+
+        /* ── Control bar ────────────────────────────────── */
+        .control-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(255,255,255,0.8);
+            border-radius: 10px;
+            padding: 14px 18px;
+            margin-bottom: 24px;
+        }
+        .control-bar .info { font-size: 0.95em; color: #2d3436; }
+        .btn-danger {
+            background: #d63031; color: white;
+            border: none; padding: 9px 18px;
+            border-radius: 8px; font-size: 0.9em;
+            font-weight: 700; cursor: pointer;
+            text-decoration: none; display: inline-block;
+        }
+        .btn-danger:hover { background: #b71c1c; text-decoration: none; }
+
+        /* ── Bracket grid ───────────────────────────────── */
+        .bracket-scroll { overflow-x: auto; padding-bottom: 16px; }
+        .bracket-grid {
+            display: flex;
+            gap: 40px;
+            align-items: flex-start;
+            min-width: max-content;
+        }
+        .round-col { display: flex; flex-direction: column; gap: 0; min-width: 260px; }
+        .round-title {
+            text-align: center;
+            font-weight: 700;
+            font-size: 0.85em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #d63031;
+            margin-bottom: 12px;
+            padding: 4px 0;
+            border-bottom: 2px solid #d63031;
+        }
+
+        /* ── Match card (admin) ─────────────────────────── */
+        .match-card {
+            background: rgba(255,255,255,0.92);
+            border: 2px solid rgba(0,0,0,0.14);
+            border-radius: 10px;
+            padding: 12px 14px;
+            margin-bottom: 10px;
+        }
+        .match-label {
+            font-size: 0.7em;
+            color: #636e72;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+        .match-team {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 5px 7px;
+            border-radius: 6px;
+            font-size: 0.9em;
+            font-weight: 500;
+            gap: 8px;
+        }
+        .match-team + .match-team { margin-top: 4px; }
+        .match-team.winner { background: #00b894; color: white; }
+        .match-team.tbd    { color: #b2bec3; font-style: italic; }
+        .match-divider { height: 1px; background: rgba(0,0,0,0.1); margin: 5px 0; }
+
+        /* ── Set winner form ────────────────────────────── */
+        .set-winner-form {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px dashed rgba(0,0,0,0.15);
+        }
+        .set-winner-form label {
+            display: block;
+            font-size: 0.75em;
+            font-weight: 600;
+            color: #636e72;
+            margin-bottom: 3px;
+        }
+        .set-winner-form select,
+        .set-winner-form input[type="number"] {
+            width: 100%; padding: 6px 8px; border-radius: 6px;
+            border: 1.5px solid #b2bec3; font-size: 0.88em;
+            background: white; margin-bottom: 6px;
+        }
+        .score-row { display: flex; gap: 8px; }
+        .score-row > div { flex: 1; }
+        .btn-set-winner {
+            width: 100%; padding: 7px; border: none;
+            background: #0984e3; color: white;
+            border-radius: 7px; font-weight: 700;
+            font-size: 0.88em; cursor: pointer;
+        }
+        .btn-set-winner:hover { background: #0773c5; }
+
+        /* ── Status badge ───────────────────────────────── */
+        .badge-status {
+            display: inline-block;
+            font-size: 0.68em; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 0.5px;
+            padding: 2px 8px; border-radius: 20px;
+            margin-top: 4px;
+        }
+        .badge-complete { background: #00b894; color: white; }
+        .badge-ready    { background: #0984e3; color: white; }
+        .badge-pending  { background: #b2bec3; color: white; }
+
+        /* ── Champion banner ────────────────────────────── */
+        .champion-banner {
+            text-align: center;
+            background: linear-gradient(135deg, #ffeaa7, #fdcb6e);
+            border: 3px solid #f9ca24;
+            border-radius: 14px;
+            padding: 18px 28px;
+            margin: 0 auto 28px;
+            max-width: 460px;
+        }
+        .champion-banner h2 { color: #2d3436; margin: 0 0 4px; }
+        .champion-name { font-size: 1.8em; font-weight: 700; color: #d63031; }
+
+        /* ── Empty state ────────────────────────────────── */
+        .bracket-empty {
+            text-align: center;
+            padding: 50px 20px;
+            background: rgba(255,255,255,0.7);
+            border-radius: 14px;
+            max-width: 480px;
+            margin: 0 auto;
+        }
+
+        /* ── Mobile ─────────────────────────────────────── */
+        @media (max-width: 700px) {
+            .bracket-grid { flex-direction: column; min-width: 0; gap: 20px; }
+            .round-col { min-width: 0; }
+        }
+    </style>
+</head>
+<body style="padding-top: 70px;">
+
+    <div class="dashboard-header">
+        <span class="logo">🎯 Admin — Bracket Management</span>
+        <div>
+            <a href="/dashboard">Dashboard</a>
+            <a href="/bracket">Public View</a>
+            <a href="/">Home</a>
+            <a href="/logout">Logout</a>
+        </div>
+    </div>
+
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <ul class="flashes" role="alert" style="margin-top: 10px;">
+          {% for message in messages %}
+            <li>{{ message }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    {% endwith %}
+
+    <div class="bracket-admin">
+        <h1>🏆 Bracket Management</h1>
+
+        {% if champion %}
+        <div class="champion-banner">
+            <h2>🥇 Tournament Champion</h2>
+            <div class="champion-name">{{ champion }}</div>
+        </div>
+        {% endif %}
+
+        <!-- Control bar -->
+        <div class="control-bar">
+            <div class="info">
+                <strong>{{ team_count }}</strong> team{{ 's' if team_count != 1 else '' }} registered
+                {% if tournament %}
+                    &bull; Created {{ tournament.created_at[:10] }}
+                    {% if tournament.locked %}
+                        &bull; <strong>🔒 Locked</strong> (results recorded)
+                    {% else %}
+                        &bull; 🔓 Open (auto-updates with new signups)
+                    {% endif %}
+                {% else %}
+                    &bull; No bracket yet
+                {% endif %}
+            </div>
+            <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+                {% if tournament %}
+                <a href="/export/bracket" class="btn-set-winner" style="background:#00b894; text-align:center; padding:7px 16px; text-decoration:none; border-radius:7px; font-weight:700; font-size:.88em; color:white;">
+                    ⬇ Export CSV
+                </a>
+                <form method="POST" action="/admin/bracket/reset"
+                      onsubmit="return confirm('Reset bracket? All results will be cleared and the bracket regenerated from the current team list.');">
+                    <button type="submit" class="btn-danger">🔄 Reset &amp; Regenerate</button>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+
+        {% if not tournament or team_count < 2 %}
+        <div class="bracket-empty">
+            <h2>📋 No bracket yet</h2>
+            <p>The bracket auto-generates once at least <strong>2 teams</strong> have signed up.</p>
+            {% if team_count == 1 %}
+            <p>Currently <strong>1 team</strong> is registered. Add one more team to generate the bracket.</p>
+            {% elif team_count == 0 %}
+            <p>No teams registered yet. <a href="/signup">Register a team</a> or add one via the <a href="/dashboard">dashboard</a>.</p>
+            {% endif %}
+        </div>
+        {% else %}
+
+        <div class="bracket-scroll">
+            <div class="bracket-grid">
+            {% for r in range(1, max_round + 1) %}
+                <div class="round-col">
+                    <div class="round-title">{{ round_names[r] }}</div>
+                    <div class="round-matches">
+                    {% for match in rounds[r] %}
+                        {% set is_bye = (match.team1_id is none or match.team2_id is none) and match.winner_id %}
+                        {% set both_present = match.team1_id is not none and match.team2_id is not none %}
+                        {% set status = 'complete' if match.winner_id else ('ready' if both_present else 'pending') %}
+
+                        <div class="match-card" id="match-{{ match.id }}">
+                            <div class="match-label">Match {{ match.match_number }}</div>
+
+                            {# Team 1 #}
+                            <div class="match-team {% if match.winner_id == match.team1_id %}winner{% elif not match.team1_id %}tbd{% endif %}">
+                                <span>
+                                    {% if match.team1_id %}{{ match.team1_name }}
+                                    {% elif is_bye %}— bye —
+                                    {% else %}TBD{% endif %}
+                                </span>
+                                {% if match.team1_score is not none %}
+                                <strong>{{ match.team1_score }}</strong>
+                                {% endif %}
+                            </div>
+
+                            <div class="match-divider"></div>
+
+                            {# Team 2 #}
+                            <div class="match-team {% if match.winner_id == match.team2_id %}winner{% elif not match.team2_id %}tbd{% endif %}">
+                                <span>
+                                    {% if match.team2_id %}{{ match.team2_name }}
+                                    {% elif is_bye %}— bye —
+                                    {% else %}TBD{% endif %}
+                                </span>
+                                {% if match.team2_score is not none %}
+                                <strong>{{ match.team2_score }}</strong>
+                                {% endif %}
+                            </div>
+
+                            <span class="badge-status badge-{{ status }}">
+                                {% if status == 'complete' %}✅ Final
+                                {% elif status == 'ready' %}🎯 Ready
+                                {% else %}⏳ Pending{% endif %}
+                            </span>
+
+                            {# Set-winner form — only show when both teams are present #}
+                            {% if both_present %}
+                            <div class="set-winner-form">
+                                <form method="POST" action="/admin/bracket/set-winner">
+                                    <input type="hidden" name="match_id" value="{{ match.id }}">
+
+                                    <label for="winner_{{ match.id }}">
+                                        {% if match.winner_id %}Change winner{% else %}Set winner{% endif %}
+                                    </label>
+                                    <select name="winner_id" id="winner_{{ match.id }}" required>
+                                        <option value="">— select winner —</option>
+                                        <option value="{{ match.team1_id }}"
+                                            {% if match.winner_id == match.team1_id %}selected{% endif %}>
+                                            {{ match.team1_name }}
+                                        </option>
+                                        <option value="{{ match.team2_id }}"
+                                            {% if match.winner_id == match.team2_id %}selected{% endif %}>
+                                            {{ match.team2_name }}
+                                        </option>
+                                    </select>
+
+                                    <div class="score-row">
+                                        <div>
+                                            <label>{{ match.team1_name }} score</label>
+                                            <input type="number" name="team1_score" min="0" max="99"
+                                                   value="{{ match.team1_score if match.team1_score is not none else '' }}"
+                                                   placeholder="pts">
+                                        </div>
+                                        <div>
+                                            <label>{{ match.team2_name }} score</label>
+                                            <input type="number" name="team2_score" min="0" max="99"
+                                                   value="{{ match.team2_score if match.team2_score is not none else '' }}"
+                                                   placeholder="pts">
+                                        </div>
+                                    </div>
+
+                                    <button type="submit" class="btn-set-winner">
+                                        {% if match.winner_id %}Update result{% else %}Record result{% endif %}
+                                    </button>
+                                </form>
+                            </div>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                    </div>
+                </div>
+            {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <footer>
+        <p>&copy; {{ current_year }} Gibs Juneteenth Cornhole Tournament</p>
+    </footer>
+
+    <script>
+        function toggleNavbar() {
+            document.getElementById("navbar").classList.toggle("show");
+        }
+    </script>
+</body>
+</html>

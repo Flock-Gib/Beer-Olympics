@@ -15,6 +15,7 @@
           <li><a href="/">Home</a></li>
           <li><a href="/event">About the Event</a></li>
           <li><a href="/rules">Rules</a></li>
+          <li><a href="/bracket">Bracket</a></li>
           <li><a href="/rsvp">RSVP</a></li>
           <li><a href="/signup" class="active">Team Sign Up</a></li>
           <li><a href="/volunteer">Volunteer</a></li>
@@ -28,9 +29,10 @@
     <div class="page-container">
         <h1>Cornhole Team Sign Up</h1>
 
-        {% if closed %}
+        {% if locked %}
         <div class="alert alert-warning">
-            🚫 Signup is closed — all 16 cornhole team slots are filled!
+            🔒 The tournament bracket is locked — sign-ups are closed while the tournament is in progress.
+            Contact the admin to request a bracket reset if you need to add a team.
         </div>
         {% else %}
 
@@ -41,7 +43,7 @@
 
         <p class="page-subtitle" style="max-width:520px;">
             Teams are exactly <strong>2 players</strong> (a captain + one teammate).
-            Register below to enter the single-elimination bracket.
+            Register below to enter the dynamic single-elimination bracket — open to any number of teams!
         </p>
 
         {% with messages = get_flashed_messages() %}
