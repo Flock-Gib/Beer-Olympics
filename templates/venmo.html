@@ -3,13 +3,146 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Venmo Payment – Gibs Juneteenth Cornhole Tournament {{ event_year }}</title>
+    <title>Pay &amp; Donate – {{ event_name }} {{ event_year }}</title>
     <link rel="stylesheet" href="/static/styles.css">
+    <style>
+        .venmo-page {
+            max-width: 640px;
+            margin: 0 auto;
+            padding: 40px 20px 60px;
+        }
+
+        .venmo-page h1 {
+            text-align: center;
+            margin-bottom: 8px;
+        }
+
+        .venmo-page .page-intro {
+            text-align: center;
+            color: #555;
+            margin-bottom: 32px;
+            font-size: 1.05em;
+        }
+
+        /* ── Cards ── */
+        .venmo-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 14px;
+            padding: 28px 30px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+            margin-bottom: 24px;
+        }
+
+        .venmo-card h2 {
+            color: #d63031;
+            margin: 0 0 6px;
+            font-size: 1.35em;
+        }
+
+        .venmo-card .card-subtitle {
+            color: #636e72;
+            font-size: 0.92em;
+            margin: 0 0 18px;
+        }
+
+        /* ── Price badge ── */
+        .price-badge {
+            display: inline-block;
+            background: #d63031;
+            color: white;
+            font-size: 2em;
+            font-weight: 800;
+            padding: 10px 28px;
+            border-radius: 50px;
+            margin: 6px 0 18px;
+            letter-spacing: 1px;
+        }
+
+        /* ── Handle block ── */
+        .venmo-handle {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: #f0f4f8;
+            border-radius: 10px;
+            padding: 14px 18px;
+            font-size: 1.2em;
+            font-weight: 700;
+            color: #2d3436;
+            margin-bottom: 16px;
+            word-break: break-all;
+        }
+
+        .venmo-handle .venmo-icon {
+            font-size: 1.6em;
+            flex-shrink: 0;
+        }
+
+        /* ── QR code ── */
+        .venmo-qr {
+            display: block;
+            max-width: 200px;
+            width: 100%;
+            margin: 0 auto 16px;
+            border-radius: 10px;
+            border: 3px solid #ffeaa7;
+        }
+
+        /* ── Suggested amounts ── */
+        .amount-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 12px 0 16px;
+        }
+
+        .amount-chip {
+            display: inline-block;
+            background: #00b894;
+            color: white;
+            font-weight: 700;
+            font-size: 1em;
+            padding: 8px 20px;
+            border-radius: 50px;
+            cursor: default;
+        }
+
+        /* ── Supply list ── */
+        .supply-list {
+            list-style: none;
+            padding: 0;
+            margin: 12px 0 16px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .supply-list li {
+            background: #f0f4f8;
+            border-radius: 20px;
+            padding: 5px 14px;
+            font-size: 0.95em;
+            color: #2d3436;
+        }
+
+        /* ── Note ── */
+        .venmo-note {
+            font-size: 0.88em;
+            color: #636e72;
+            text-align: center;
+            margin-top: 8px;
+        }
+
+        @media (max-width: 480px) {
+            .venmo-card { padding: 22px 18px; }
+            .price-badge { font-size: 1.6em; padding: 8px 20px; }
+        }
+    </style>
 </head>
 <body>
     <nav>
       <div class="navbar-container">
-        <span class="logo">🎯 Gibs Cornhole Tournament</span>
+        <span class="logo">🎯 Juneteenth at Gibby's</span>
         <button class="hamburger" aria-label="Toggle navigation" onclick="toggleNavbar()">☰</button>
         <ul class="navbar" id="navbar">
           <li><a href="/">Home</a></li>
@@ -26,17 +159,74 @@
       </div>
     </nav>
 
-    <div class="venmo-container">
-        <h1 style="margin-top: 100px; text-align: center; color: #d63031;">Venmo Payment</h1>
-        <p>Please send your $20 team registration fee via Venmo to:</p>
-        <h2>@Gibson-StJohn</h2>
-        <p>Or scan the QR code below:</p>
-        <img src="{{ url_for('static', filename='Photos/IMG_9295.PNG') }}" alt="Venmo QR Code" class="venmo-qr">
-        <p>Once your payment is complete, your spot is confirmed!</p>
+    <div class="venmo-page">
+        <h1>💸 Pay &amp; Donate</h1>
+        <p class="page-intro">
+            All payments go to <strong>@Gibson-StJohn</strong> on Venmo.<br>
+            Scan the QR code below or search the handle in the Venmo app.
+        </p>
+
+        <!-- ── Team Entry ── -->
+        <div class="venmo-card">
+            <h2>🎯 Team Entry Fee</h2>
+            <p class="card-subtitle">Required to compete in the cornhole tournament (teams of 2 players)</p>
+
+            <div class="price-badge">$20 per team</div>
+
+            <div class="venmo-handle">
+                <span class="venmo-icon">💙</span>
+                <span>@Gibson-StJohn</span>
+            </div>
+
+            <img src="{{ url_for('static', filename='Photos/IMG_9295.PNG') }}"
+                 alt="Venmo QR Code for @Gibson-StJohn"
+                 class="venmo-qr">
+
+            <p style="text-align:center; font-size:0.93em; color:#2d3436;">
+                💡 Include your <strong>team name</strong> in the Venmo note so we know who paid!
+            </p>
+            <p class="venmo-note">
+                Payment + team registration must be completed by <strong>June 16th</strong> to secure your spot.
+                <a href="/signup">Register your team →</a>
+            </p>
+        </div>
+
+        <!-- ── Supplies Donation ── -->
+        <div class="venmo-card">
+            <h2>🙏 Donate for Supplies</h2>
+            <p class="card-subtitle">
+                Not competing but still want to help? Every dollar goes toward keeping the party going
+                — ice, cups, charcoal, coolers, and more!
+            </p>
+
+            <ul class="supply-list" aria-label="Supplies covered by donations">
+                <li>🧊 Ice</li>
+                <li>🥤 Cups</li>
+                <li>🔥 Charcoal</li>
+                <li>🍱 Condiments &amp; Extras</li>
+                <li>🎉 Party Supplies</li>
+            </ul>
+
+            <p style="font-size:0.95em; font-weight:600; margin-bottom:8px;">Suggested amounts:</p>
+            <div class="amount-chips" role="list" aria-label="Suggested donation amounts">
+                <span class="amount-chip" role="listitem">$5</span>
+                <span class="amount-chip" role="listitem">$10</span>
+                <span class="amount-chip" role="listitem">$20</span>
+            </div>
+
+            <div class="venmo-handle">
+                <span class="venmo-icon">💙</span>
+                <span>@Gibson-StJohn</span>
+            </div>
+
+            <p class="venmo-note">
+                Send any amount that feels right — every little bit helps and is hugely appreciated! ❤️
+            </p>
+        </div>
     </div>
 
     <footer>
-        <p style="text-align: center;">&copy; {{ current_year }} Gibs Juneteenth Cornhole Tournament</p>
+        <p style="text-align: center;">&copy; {{ current_year }} {{ event_name }}</p>
     </footer>
 
     <script>

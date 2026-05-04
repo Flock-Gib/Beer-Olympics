@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   Gibs Juneteenth Beer Olympics — Main Stylesheet
+   Juneteenth at Gibby's — Main Stylesheet
    ═══════════════════════════════════════════════════════════════ */
 
 /* ── Google Fonts ──────────────────────────────────────────────── */
@@ -158,6 +158,49 @@ ul.navbar li a.active {
     margin: 0 0 24px;
     max-width: 600px;
 }
+
+/* ── Cost banner (team sign-up page) ──────────────────────────────────────── */
+.cost-banner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    background: linear-gradient(135deg, #d63031, #e17055);
+    color: white;
+    border-radius: 14px;
+    padding: 20px 28px;
+    margin: 0 auto 28px;
+    max-width: 480px;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 4px 14px rgba(214, 48, 49, 0.35);
+}
+
+.cost-banner .cost-label {
+    font-size: 0.9em;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    opacity: 0.9;
+}
+
+.cost-banner .cost-amount {
+    font-size: 2.2em;
+    font-weight: 800;
+    letter-spacing: 1px;
+    line-height: 1.1;
+}
+
+.cost-banner .cost-note {
+    font-size: 0.88em;
+    opacity: 0.9;
+}
+
+.cost-banner .cost-note a {
+    color: #ffeaa7;
+    font-weight: 700;
+}
+
 
 .page-note {
     text-align: center;

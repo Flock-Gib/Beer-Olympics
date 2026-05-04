@@ -14,6 +14,7 @@ from werkzeug.utils import secure_filename
 from dotenv import load_dotenv
 
 # ── Event constants ──────────────────────────────────────────────────────────
+EVENT_NAME  = "Juneteenth at Gibby's"
 EVENT_MONTH = 6   # June
 EVENT_DAY   = 19  # Juneteenth
 
@@ -400,7 +401,12 @@ def inject_event_info():
     if today > candidate:
         year += 1
     event_date_str = datetime.date(year, EVENT_MONTH, EVENT_DAY).strftime('%B %-d, %Y')
-    return dict(current_year=today.year, event_year=year, event_date_str=event_date_str)
+    return dict(
+        current_year=today.year,
+        event_year=year,
+        event_date_str=event_date_str,
+        event_name=EVENT_NAME,
+    )
 
 
 # ── Routes ──────────────────────────────────────────────────────────────────
