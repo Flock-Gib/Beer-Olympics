@@ -3,7 +3,6 @@ from flask import (
     flash, session, send_file, abort
 )
 import os
-import sqlite3
 import uuid
 import datetime
 import csv
@@ -12,6 +11,8 @@ import math
 import random
 from werkzeug.utils import secure_filename
 from dotenv import load_dotenv
+from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import text, inspect as sa_inspect
 
 # ── Event constants ──────────────────────────────────────────────────────────
 EVENT_NAME  = "Juneteenth at Gibby's"
@@ -50,103 +51,124 @@ app.config['MAX_CONTENT_LENGTH'] = MAX_CONTENT_LENGTH
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 # ── Database ────────────────────────────────────────────────────────────────
-DB_PATH = os.path.join(app.root_path, 'data', 'beer_olympics.db')
-os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
+# Normalize Render-style postgres:// URLs to postgresql:// for SQLAlchemy
+_raw_db_url = os.getenv('DATABASE_URL', '')
+if _raw_db_url.startswith('postgres://'):
+    _raw_db_url = _raw_db_url.replace('postgres://', 'postgresql://', 1)
+if not _raw_db_url:
+    _db_dir = os.path.join(app.root_path, 'data')
+    os.makedirs(_db_dir, exist_ok=True)
+    _raw_db_url = 'sqlite:///' + os.path.join(_db_dir, 'beer_olympics.db')
+
+app.config['SQLALCHEMY_DATABASE_URI'] = _raw_db_url
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+db = SQLAlchemy(app)
 
 
-def get_db():
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
-    return conn
+# ── Models ───────────────────────────────────────────────────────────────────
+
+class Team(db.Model):
+    __tablename__ = 'teams'
+    id = db.Column(db.Integer, primary_key=True)
+    timestamp = db.Column(db.Text, nullable=False)
+    country = db.Column(db.Text, nullable=False)
+    captain_name = db.Column(db.Text, nullable=False)
+    captain_email = db.Column(db.Text)
+    teammate_name = db.Column(db.Text, nullable=False)
+    event_year = db.Column(db.Integer)
+
+
+class RSVP(db.Model):
+    __tablename__ = 'rsvp'
+    id = db.Column(db.Integer, primary_key=True)
+    timestamp = db.Column(db.Text, nullable=False)
+    name = db.Column(db.Text, nullable=False)
+    email = db.Column(db.Text)
+    status = db.Column(db.Text, nullable=False, server_default='attending')
+    guests = db.Column(db.Integer, server_default='0')
+    notes = db.Column(db.Text)
+    event_year = db.Column(db.Integer)
+
+
+class Volunteer(db.Model):
+    __tablename__ = 'volunteer'
+    id = db.Column(db.Integer, primary_key=True)
+    timestamp = db.Column(db.Text, nullable=False)
+    name = db.Column(db.Text, nullable=False)
+    email = db.Column(db.Text)
+    phone = db.Column(db.Text)
+    category = db.Column(db.Text)
+    item_description = db.Column(db.Text, nullable=False)
+    quantity = db.Column(db.Text)
+    notes = db.Column(db.Text)
+    event_year = db.Column(db.Integer)
+
+
+class Photo(db.Model):
+    __tablename__ = 'photos'
+    id = db.Column(db.Integer, primary_key=True)
+    timestamp = db.Column(db.Text, nullable=False)
+    uploader_name = db.Column(db.Text)
+    caption = db.Column(db.Text)
+    filename = db.Column(db.Text, nullable=False)
+    event_year = db.Column(db.Integer)
+
+
+class Tournament(db.Model):
+    __tablename__ = 'tournament'
+    id = db.Column(db.Integer, primary_key=True)
+    created_at = db.Column(db.Text, nullable=False)
+    locked = db.Column(db.Integer, nullable=False, default=0, server_default='0')
+
+
+class Match(db.Model):
+    __tablename__ = 'matches'
+    id = db.Column(db.Integer, primary_key=True)
+    tournament_id = db.Column(db.Integer, nullable=False)
+    round = db.Column(db.Integer, nullable=False)
+    match_number = db.Column(db.Integer, nullable=False)
+    team1_id = db.Column(db.Integer)
+    team2_id = db.Column(db.Integer)
+    winner_id = db.Column(db.Integer)
+    team1_score = db.Column(db.Integer)
+    team2_score = db.Column(db.Integer)
+    next_match_id = db.Column(db.Integer)
+    next_match_slot = db.Column(db.Integer)
 
 
 def init_db():
-    with get_db() as conn:
-        conn.executescript("""
-            CREATE TABLE IF NOT EXISTS teams (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                timestamp TEXT NOT NULL,
-                country TEXT NOT NULL,
-                captain_name TEXT NOT NULL,
-                captain_email TEXT,
-                teammate_name TEXT NOT NULL,
-                event_year INTEGER
-            );
-
-            CREATE TABLE IF NOT EXISTS rsvp (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                timestamp TEXT NOT NULL,
-                name TEXT NOT NULL,
-                email TEXT,
-                status TEXT NOT NULL DEFAULT 'attending',
-                guests INTEGER DEFAULT 0,
-                notes TEXT,
-                event_year INTEGER
-            );
-
-            CREATE TABLE IF NOT EXISTS volunteer (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                timestamp TEXT NOT NULL,
-                name TEXT NOT NULL,
-                email TEXT,
-                phone TEXT,
-                category TEXT,
-                item_description TEXT NOT NULL,
-                quantity TEXT,
-                notes TEXT,
-                event_year INTEGER
-            );
-
-            CREATE TABLE IF NOT EXISTS photos (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                timestamp TEXT NOT NULL,
-                uploader_name TEXT,
-                caption TEXT,
-                filename TEXT NOT NULL,
-                event_year INTEGER
-            );
-
-            CREATE TABLE IF NOT EXISTS tournament (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                created_at TEXT NOT NULL,
-                locked INTEGER NOT NULL DEFAULT 0
-            );
-
-            CREATE TABLE IF NOT EXISTS matches (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                tournament_id INTEGER NOT NULL,
-                round INTEGER NOT NULL,
-                match_number INTEGER NOT NULL,
-                team1_id INTEGER,
-                team2_id INTEGER,
-                winner_id INTEGER,
-                team1_score INTEGER,
-                team2_score INTEGER,
-                next_match_id INTEGER,
-                next_match_slot INTEGER
-            );
-        """)
+    db.create_all()
 
 
 _ALLOWED_EVENT_YEAR_TABLES = frozenset({'teams', 'rsvp', 'volunteer', 'photos'})
 
 
 def _migrate_event_year():
-    """Add event_year column to legacy tables if missing and backfill existing rows."""
+    """Add event_year column to legacy tables if missing and backfill existing rows.
+
+    Needed for SQLite local-dev databases that pre-date the event_year column.
+    On a fresh Postgres DB created via create_all() this is a no-op.
+    """
+    insp = sa_inspect(db.engine)
     year = compute_event_year()
-    with get_db() as conn:
+    with db.engine.connect() as conn:
         for table in _ALLOWED_EVENT_YEAR_TABLES:
-            cols = [r[1] for r in conn.execute(f'PRAGMA table_info({table})').fetchall()]
-            if 'event_year' not in cols:
-                conn.execute(f'ALTER TABLE {table} ADD COLUMN event_year INTEGER')
+            if not insp.has_table(table):
+                continue
+            col_names = [c['name'] for c in insp.get_columns(table)]
+            if 'event_year' not in col_names:
+                conn.execute(text(f'ALTER TABLE {table} ADD COLUMN event_year INTEGER'))
             conn.execute(
-                f'UPDATE {table} SET event_year = ? WHERE event_year IS NULL',
-                (year,)
+                text(f'UPDATE {table} SET event_year = :year WHERE event_year IS NULL'),
+                {'year': year},
             )
+        conn.commit()
 
 
-init_db()
-_migrate_event_year()
+with app.app_context():
+    init_db()
+    _migrate_event_year()
 
 # ── Admin credentials ───────────────────────────────────────────────────────
 ADMIN_USERNAME = os.getenv('ADMIN_USERNAME', 'admin')
@@ -195,74 +217,66 @@ def _get_round_name(r, max_round):
     return f'Round {r}'
 
 
-def _get_active_tournament(conn):
+def _get_active_tournament():
     """Return the most recent tournament row, or None."""
-    return conn.execute(
-        'SELECT * FROM tournament ORDER BY id DESC LIMIT 1'
-    ).fetchone()
+    return db.session.execute(
+        db.select(Tournament).order_by(Tournament.id.desc())
+    ).scalars().first()
 
 
-def _cascade_clear_from_match(conn, match_id):
+def _cascade_clear_from_match(match_id):
     """
     When a match's winner changes, clear that winner's placement in the next
     match and cascade any further downstream placements (if those were also
     decided from the now-invalidated result).
     """
-    match = conn.execute(
-        'SELECT next_match_id, next_match_slot FROM matches WHERE id=?',
-        (match_id,)
-    ).fetchone()
+    match = db.session.get(Match, match_id)
 
-    if not match or not match['next_match_id']:
+    if not match or not match.next_match_id:
         return
 
-    next_id = match['next_match_id']
-    slot = match['next_match_slot']
+    next_id = match.next_match_id
+    slot = match.next_match_slot
 
     # If the next match also has a winner, cascade from there first
-    next_match = conn.execute(
-        'SELECT winner_id FROM matches WHERE id=?', (next_id,)
-    ).fetchone()
-    if next_match and next_match['winner_id']:
-        _cascade_clear_from_match(conn, next_id)
-        conn.execute(
-            'UPDATE matches SET winner_id=NULL, team1_score=NULL, team2_score=NULL WHERE id=?',
-            (next_id,)
-        )
+    next_match = db.session.get(Match, next_id)
+    if next_match and next_match.winner_id:
+        _cascade_clear_from_match(next_id)
+        next_match.winner_id = None
+        next_match.team1_score = None
+        next_match.team2_score = None
 
     # Clear this match's winner from the appropriate slot in the next match
     if slot == 1:
-        conn.execute('UPDATE matches SET team1_id=NULL WHERE id=?', (next_id,))
+        next_match.team1_id = None
     else:
-        conn.execute('UPDATE matches SET team2_id=NULL WHERE id=?', (next_id,))
+        next_match.team2_id = None
 
 
-def _place_winner_in_next(conn, match_id, winner_id):
+def _place_winner_in_next(match_id, winner_id):
     """Place winner_id into the correct slot of this match's next match."""
-    match = conn.execute(
-        'SELECT next_match_id, next_match_slot FROM matches WHERE id=?',
-        (match_id,)
-    ).fetchone()
-    if not match or not match['next_match_id']:
+    match = db.session.get(Match, match_id)
+    if not match or not match.next_match_id:
         return
-    next_id = match['next_match_id']
-    slot = match['next_match_slot']
-    if slot == 1:
-        conn.execute('UPDATE matches SET team1_id=? WHERE id=?', (winner_id, next_id))
+    next_match = db.session.get(Match, match.next_match_id)
+    if not next_match:
+        return
+    if match.next_match_slot == 1:
+        next_match.team1_id = winner_id
     else:
-        conn.execute('UPDATE matches SET team2_id=? WHERE id=?', (winner_id, next_id))
+        next_match.team2_id = winner_id
 
 
-def generate_bracket(conn, event_year=None):
+def generate_bracket(event_year=None):
     """
     Generate a fresh single-elimination bracket from all current teams.
     Returns the new tournament_id, or None if fewer than 2 teams.
     """
     if event_year is None:
         event_year = compute_event_year()
-    teams = conn.execute(
-        'SELECT id, country FROM teams WHERE event_year = ? ORDER BY id', (event_year,)
-    ).fetchall()
+    teams = db.session.execute(
+        db.select(Team).filter_by(event_year=event_year).order_by(Team.id)
+    ).scalars().all()
     n = len(teams)
     if n < 2:
         return None
@@ -275,27 +289,24 @@ def generate_bracket(conn, event_year=None):
     num_byes = p - n
 
     # Create tournament record
-    cur = conn.execute(
-        'INSERT INTO tournament (created_at, locked) VALUES (?, 0)',
-        (now_ts(),)
-    )
-    tournament_id = cur.lastrowid
+    tournament = Tournament(created_at=now_ts(), locked=0)
+    db.session.add(tournament)
+    db.session.flush()  # obtain tournament.id before creating matches
+    tournament_id = tournament.id
 
     # Create all match rows for every round (empty at first)
     match_ids = {}  # (round, match_number) -> match_id
     for r in range(1, num_rounds + 1):
         num_matches = p // (2 ** r)
         for m in range(1, num_matches + 1):
-            cur = conn.execute(
-                '''INSERT INTO matches
-                   (tournament_id, round, match_number,
-                    team1_id, team2_id, winner_id,
-                    team1_score, team2_score,
-                    next_match_id, next_match_slot)
-                   VALUES (?,?,?,NULL,NULL,NULL,NULL,NULL,NULL,NULL)''',
-                (tournament_id, r, m)
+            new_match = Match(
+                tournament_id=tournament_id,
+                round=r,
+                match_number=m,
             )
-            match_ids[(r, m)] = cur.lastrowid
+            db.session.add(new_match)
+            db.session.flush()  # obtain new_match.id
+            match_ids[(r, m)] = new_match.id
 
     # Wire up next_match_id and next_match_slot for all non-final rounds
     for r in range(1, num_rounds):
@@ -303,10 +314,9 @@ def generate_bracket(conn, event_year=None):
         for m in range(1, num_matches + 1):
             next_match_num = (m + 1) // 2
             slot = 1 if m % 2 == 1 else 2
-            conn.execute(
-                'UPDATE matches SET next_match_id=?, next_match_slot=? WHERE id=?',
-                (match_ids[(r + 1, next_match_num)], slot, match_ids[(r, m)])
-            )
+            match_obj = db.session.get(Match, match_ids[(r, m)])
+            match_obj.next_match_id = match_ids[(r + 1, next_match_num)]
+            match_obj.next_match_slot = slot
 
     # Build round-1 pairings:
     #   - First num_byes teams each get a bye (1 team vs None)
@@ -321,13 +331,12 @@ def generate_bracket(conn, event_year=None):
 
     for idx, (t1, t2) in enumerate(pairings):
         match_num = idx + 1
-        t1_id = t1['id'] if t1 else None
-        t2_id = t2['id'] if t2 else None
+        t1_id = t1.id if t1 else None
+        t2_id = t2.id if t2 else None
         mid = match_ids[(1, match_num)]
-        conn.execute(
-            'UPDATE matches SET team1_id=?, team2_id=? WHERE id=?',
-            (t1_id, t2_id, mid)
-        )
+        match_obj = db.session.get(Match, mid)
+        match_obj.team1_id = t1_id
+        match_obj.team2_id = t2_id
         # Auto-advance team that has a bye
         auto_winner = None
         if t1_id and not t2_id:
@@ -336,16 +345,13 @@ def generate_bracket(conn, event_year=None):
             auto_winner = t2_id
 
         if auto_winner:
-            conn.execute(
-                'UPDATE matches SET winner_id=? WHERE id=?',
-                (auto_winner, mid)
-            )
-            _place_winner_in_next(conn, mid, auto_winner)
+            match_obj.winner_id = auto_winner
+            _place_winner_in_next(mid, auto_winner)
 
     return tournament_id
 
 
-def get_or_regenerate_bracket(conn, event_year=None):
+def get_or_regenerate_bracket(event_year=None):
     """
     Return the active tournament, auto-regenerating if the bracket is not
     locked and the team roster has changed since it was last generated.
@@ -353,44 +359,44 @@ def get_or_regenerate_bracket(conn, event_year=None):
     """
     if event_year is None:
         event_year = compute_event_year()
-    t = _get_active_tournament(conn)
-    team_count = conn.execute(
-        'SELECT COUNT(*) FROM teams WHERE event_year = ?', (event_year,)
-    ).fetchone()[0]
+    t = _get_active_tournament()
+    team_count = db.session.query(Team).filter_by(event_year=event_year).count()
 
     if team_count < 2:
         return None, False
 
-    if t is not None and t['locked']:
+    if t is not None and t.locked:
         return t, False
 
     # Count how many real teams are in the current bracket's round 1
     if t is not None:
-        bracketed = conn.execute(
-            '''SELECT COUNT(DISTINCT tid) FROM (
-                   SELECT team1_id AS tid FROM matches
-                   WHERE tournament_id=? AND round=1 AND team1_id IS NOT NULL
+        bracketed = db.session.execute(text(
+            '''SELECT COUNT(DISTINCT team_id) FROM (
+                   SELECT team1_id AS team_id FROM matches
+                   WHERE tournament_id=:tid AND round=1 AND team1_id IS NOT NULL
                    UNION
-                   SELECT team2_id AS tid FROM matches
-                   WHERE tournament_id=? AND round=1 AND team2_id IS NOT NULL
-               )''',
-            (t['id'], t['id'])
-        ).fetchone()[0]
+                   SELECT team2_id AS team_id FROM matches
+                   WHERE tournament_id=:tid AND round=1 AND team2_id IS NOT NULL
+               ) subq'''
+        ), {'tid': t.id}).scalar()
         if bracketed == team_count:
             return t, False  # roster unchanged
 
         # Roster changed — regenerate
-        conn.execute('DELETE FROM matches WHERE tournament_id=?', (t['id'],))
-        conn.execute('DELETE FROM tournament WHERE id=?', (t['id'],))
+        db.session.execute(
+            text('DELETE FROM matches WHERE tournament_id = :tid'), {'tid': t.id}
+        )
+        db.session.delete(t)
+        db.session.flush()
 
-    new_tid = generate_bracket(conn, event_year)
+    new_tid = generate_bracket(event_year)
     if new_tid is None:
         return None, False
-    new_t = conn.execute('SELECT * FROM tournament WHERE id=?', (new_tid,)).fetchone()
+    new_t = db.session.get(Tournament, new_tid)
     return new_t, True
 
 
-def build_bracket_context(conn, tournament):
+def build_bracket_context(tournament):
     """
     Build context dict for rendering bracket templates.
     Returns dict with keys: rounds, round_names, max_round, champion.
@@ -398,7 +404,7 @@ def build_bracket_context(conn, tournament):
     if tournament is None:
         return {'rounds': {}, 'round_names': {}, 'max_round': 0, 'champion': None}
 
-    matches = conn.execute(
+    matches = db.session.execute(text(
         '''SELECT m.*,
                   t1.country AS team1_name,
                   t2.country AS team2_name,
@@ -407,15 +413,14 @@ def build_bracket_context(conn, tournament):
            LEFT JOIN teams t1 ON m.team1_id  = t1.id
            LEFT JOIN teams t2 ON m.team2_id  = t2.id
            LEFT JOIN teams w  ON m.winner_id = w.id
-           WHERE m.tournament_id = ?
-           ORDER BY m.round, m.match_number''',
-        (tournament['id'],)
-    ).fetchall()
+           WHERE m.tournament_id = :tid
+           ORDER BY m.round, m.match_number'''
+    ), {'tid': tournament.id}).fetchall()
 
     rounds = {}
     max_round = 0
     for m in matches:
-        r = m['round']
+        r = m.round
         rounds.setdefault(r, []).append(m)
         if r > max_round:
             max_round = r
@@ -424,8 +429,8 @@ def build_bracket_context(conn, tournament):
     champion = None
     if max_round and rounds.get(max_round):
         final = rounds[max_round][0]
-        if final['winner_id']:
-            champion = final['winner_name']
+        if final.winner_id:
+            champion = final.winner_name
 
     return {
         'rounds': rounds,
@@ -460,11 +465,10 @@ def index():
 
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
-    with get_db() as conn:
-        locked = False
-        t = _get_active_tournament(conn)
-        if t and t['locked']:
-            locked = True
+    locked = False
+    t = _get_active_tournament()
+    if t and t.locked:
+        locked = True
 
     if request.method == 'POST':
         if locked:
@@ -485,13 +489,19 @@ def signup():
             flash('Please fill in all required fields.')
             return redirect(url_for('signup'))
 
-        with get_db() as conn:
-            conn.execute(
-                'INSERT INTO teams (timestamp, country, captain_name, captain_email, teammate_name, event_year) VALUES (?,?,?,?,?,?)',
-                (now_ts(), country, captain_name, captain_email, teammate_name, compute_event_year())
-            )
-            # Auto-regenerate bracket if not locked
-            get_or_regenerate_bracket(conn)
+        team = Team(
+            timestamp=now_ts(),
+            country=country,
+            captain_name=captain_name,
+            captain_email=captain_email,
+            teammate_name=teammate_name,
+            event_year=compute_event_year(),
+        )
+        db.session.add(team)
+        db.session.flush()
+        # Auto-regenerate bracket if not locked
+        get_or_regenerate_bracket()
+        db.session.commit()
 
         flash('Your team has been successfully signed up! 🎉')
         return redirect(url_for('index'))
@@ -516,11 +526,17 @@ def rsvp():
             guests = 0
         notes = request.form.get('notes', '').strip()
 
-        with get_db() as conn:
-            conn.execute(
-                'INSERT INTO rsvp (timestamp, name, email, status, guests, notes, event_year) VALUES (?,?,?,?,?,?,?)',
-                (now_ts(), name, email, status, guests, notes, compute_event_year())
-            )
+        rsvp_entry = RSVP(
+            timestamp=now_ts(),
+            name=name,
+            email=email,
+            status=status,
+            guests=guests,
+            notes=notes,
+            event_year=compute_event_year(),
+        )
+        db.session.add(rsvp_entry)
+        db.session.commit()
         flash(f"Thank you, {name}! Your RSVP has been received. 🍺")
         return redirect(url_for('index'))
 
@@ -546,12 +562,19 @@ def volunteer():
         quantity = request.form.get('quantity', '').strip()
         notes = request.form.get('notes', '').strip()
 
-        with get_db() as conn:
-            conn.execute(
-                'INSERT INTO volunteer (timestamp, name, email, phone, category, item_description, quantity, notes, event_year) '
-                'VALUES (?,?,?,?,?,?,?,?,?)',
-                (now_ts(), name, email, phone, category, item_description, quantity, notes, compute_event_year())
-            )
+        vol = Volunteer(
+            timestamp=now_ts(),
+            name=name,
+            email=email,
+            phone=phone,
+            category=category,
+            item_description=item_description,
+            quantity=quantity,
+            notes=notes,
+            event_year=compute_event_year(),
+        )
+        db.session.add(vol)
+        db.session.commit()
         flash('Thank you for volunteering to bring something! 🙌')
         return redirect(url_for('index'))
 
@@ -583,19 +606,23 @@ def gallery():
         save_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_name)
         file.save(save_path)
 
-        with get_db() as conn:
-            conn.execute(
-                'INSERT INTO photos (timestamp, uploader_name, caption, filename, event_year) VALUES (?,?,?,?,?)',
-                (now_ts(), uploader_name, caption, unique_name, compute_event_year())
-            )
+        photo = Photo(
+            timestamp=now_ts(),
+            uploader_name=uploader_name,
+            caption=caption,
+            filename=unique_name,
+            event_year=compute_event_year(),
+        )
+        db.session.add(photo)
+        db.session.commit()
         flash('Photo uploaded successfully! 📸')
         return redirect(url_for('gallery'))
 
-    with get_db() as conn:
-        photos = conn.execute(
-            'SELECT * FROM photos WHERE event_year = ? ORDER BY id DESC',
-            (compute_event_year(),)
-        ).fetchall()
+    photos = db.session.execute(
+        db.select(Photo)
+        .filter_by(event_year=compute_event_year())
+        .order_by(Photo.id.desc())
+    ).scalars().all()
 
     return render_template('gallery.html', photos=photos)
 
@@ -624,19 +651,18 @@ def dashboard():
 
     selected_year = request.args.get('year', type=int, default=compute_event_year())
 
-    with get_db() as conn:
-        teams = conn.execute(
-            'SELECT * FROM teams WHERE event_year = ? ORDER BY id', (selected_year,)
-        ).fetchall()
-        rsvps = conn.execute(
-            'SELECT * FROM rsvp WHERE event_year = ? ORDER BY id', (selected_year,)
-        ).fetchall()
-        volunteers = conn.execute(
-            'SELECT * FROM volunteer WHERE event_year = ? ORDER BY id', (selected_year,)
-        ).fetchall()
-        photos = conn.execute(
-            'SELECT * FROM photos WHERE event_year = ? ORDER BY id DESC', (selected_year,)
-        ).fetchall()
+    teams = db.session.execute(
+        db.select(Team).filter_by(event_year=selected_year).order_by(Team.id)
+    ).scalars().all()
+    rsvps = db.session.execute(
+        db.select(RSVP).filter_by(event_year=selected_year).order_by(RSVP.id)
+    ).scalars().all()
+    volunteers = db.session.execute(
+        db.select(Volunteer).filter_by(event_year=selected_year).order_by(Volunteer.id)
+    ).scalars().all()
+    photos = db.session.execute(
+        db.select(Photo).filter_by(event_year=selected_year).order_by(Photo.id.desc())
+    ).scalars().all()
 
     return render_template(
         'dashboard.html',
@@ -659,12 +685,10 @@ def logout():
 
 @app.route('/bracket')
 def bracket():
-    with get_db() as conn:
-        tournament, _ = get_or_regenerate_bracket(conn)
-        ctx = build_bracket_context(conn, tournament)
-        team_count = conn.execute(
-            'SELECT COUNT(*) FROM teams WHERE event_year = ?', (compute_event_year(),)
-        ).fetchone()[0]
+    tournament, _ = get_or_regenerate_bracket()
+    ctx = build_bracket_context(tournament)
+    team_count = db.session.query(Team).filter_by(event_year=compute_event_year()).count()
+    db.session.commit()
     return render_template(
         'bracket.html',
         tournament=tournament,
@@ -679,17 +703,16 @@ def admin_bracket():
     if guard:
         return guard
 
-    with get_db() as conn:
-        tournament, _ = get_or_regenerate_bracket(conn)
-        ctx = build_bracket_context(conn, tournament)
-        team_count = conn.execute(
-            'SELECT COUNT(*) FROM teams WHERE event_year = ?', (compute_event_year(),)
-        ).fetchone()[0]
-        # Fetch all teams for the winner-selection dropdowns
-        all_teams = conn.execute(
-            'SELECT id, country FROM teams WHERE event_year = ? ORDER BY country',
-            (compute_event_year(),)
-        ).fetchall()
+    tournament, _ = get_or_regenerate_bracket()
+    ctx = build_bracket_context(tournament)
+    team_count = db.session.query(Team).filter_by(event_year=compute_event_year()).count()
+    # Fetch all teams for the winner-selection dropdowns
+    all_teams = db.session.execute(
+        db.select(Team)
+        .filter_by(event_year=compute_event_year())
+        .order_by(Team.country)
+    ).scalars().all()
+    db.session.commit()
 
     return render_template(
         'admin_bracket.html',
@@ -715,35 +738,33 @@ def admin_bracket_set_winner():
         flash('Match ID and winner are required.')
         return redirect(url_for('admin_bracket'))
 
-    with get_db() as conn:
-        match = conn.execute('SELECT * FROM matches WHERE id=?', (match_id,)).fetchone()
-        if not match:
-            flash('Match not found.')
-            return redirect(url_for('admin_bracket'))
+    match = db.session.get(Match, match_id)
+    if not match:
+        flash('Match not found.')
+        return redirect(url_for('admin_bracket'))
 
-        if winner_id not in (match['team1_id'], match['team2_id']):
-            flash('Winner must be one of the teams in this match.')
-            return redirect(url_for('admin_bracket'))
+    if winner_id not in (match.team1_id, match.team2_id):
+        flash('Winner must be one of the teams in this match.')
+        return redirect(url_for('admin_bracket'))
 
-        # If winner is being changed, cascade-clear downstream placements
-        if match['winner_id'] and match['winner_id'] != winner_id:
-            _cascade_clear_from_match(conn, match_id)
+    # If winner is being changed, cascade-clear downstream placements
+    if match.winner_id and match.winner_id != winner_id:
+        _cascade_clear_from_match(match_id)
 
-        # Set the winner and optional scores
-        conn.execute(
-            'UPDATE matches SET winner_id=?, team1_score=?, team2_score=? WHERE id=?',
-            (winner_id, t1_score, t2_score, match_id)
-        )
+    # Set the winner and optional scores
+    match.winner_id = winner_id
+    match.team1_score = t1_score
+    match.team2_score = t2_score
 
-        # Place winner in next match slot
-        _place_winner_in_next(conn, match_id, winner_id)
+    # Place winner in next match slot
+    _place_winner_in_next(match_id, winner_id)
 
-        # Lock the tournament now that a result exists
-        conn.execute(
-            'UPDATE tournament SET locked=1 WHERE id=?',
-            (match['tournament_id'],)
-        )
+    # Lock the tournament now that a result exists
+    tournament = db.session.get(Tournament, match.tournament_id)
+    if tournament:
+        tournament.locked = 1
 
+    db.session.commit()
     flash('Winner recorded! ✅')
     return redirect(url_for('admin_bracket'))
 
@@ -754,13 +775,16 @@ def admin_bracket_reset():
     if guard:
         return guard
 
-    with get_db() as conn:
-        t = _get_active_tournament(conn)
-        if t:
-            conn.execute('DELETE FROM matches WHERE tournament_id=?', (t['id'],))
-            conn.execute('DELETE FROM tournament WHERE id=?', (t['id'],))
-        # Regenerate from current teams
-        generate_bracket(conn)
+    t = _get_active_tournament()
+    if t:
+        db.session.execute(
+            text('DELETE FROM matches WHERE tournament_id = :tid'), {'tid': t.id}
+        )
+        db.session.delete(t)
+        db.session.flush()
+    # Regenerate from current teams
+    generate_bracket()
+    db.session.commit()
 
     flash('Tournament bracket has been reset and regenerated. 🔄')
     return redirect(url_for('admin_bracket'))
@@ -768,15 +792,30 @@ def admin_bracket_reset():
 
 # ── CSV exports (admin-protected) ────────────────────────────────────────────
 
+def _model_to_dict(instance):
+    """Convert a SQLAlchemy ORM model instance to an ordered dict."""
+    return {c.key: getattr(instance, c.key)
+            for c in sa_inspect(instance).mapper.column_attrs}
+
+
 def _csv_response(rows, filename):
     if not rows:
         flash('No data to export.')
         return redirect(url_for('dashboard'))
     si = io.StringIO()
     writer = csv.writer(si)
-    writer.writerow(rows[0].keys())
-    for row in rows:
-        writer.writerow(list(row))
+    # rows may be ORM model instances or SQLAlchemy Row objects (text queries)
+    if hasattr(rows[0], '_mapping'):
+        # Row objects returned by db.session.execute(text(...))
+        writer.writerow(rows[0]._mapping.keys())
+        for row in rows:
+            writer.writerow(list(row._mapping.values()))
+    else:
+        # ORM model instances
+        dicts = [_model_to_dict(r) for r in rows]
+        writer.writerow(dicts[0].keys())
+        for d in dicts:
+            writer.writerow(list(d.values()))
     output = io.BytesIO(si.getvalue().encode('utf-8'))
     output.seek(0)
     return send_file(output, mimetype='text/csv',
@@ -789,10 +828,9 @@ def export_rsvp():
     if guard:
         return guard
     selected_year = request.args.get('year', type=int, default=compute_event_year())
-    with get_db() as conn:
-        rows = conn.execute(
-            'SELECT * FROM rsvp WHERE event_year = ? ORDER BY id', (selected_year,)
-        ).fetchall()
+    rows = db.session.execute(
+        db.select(RSVP).filter_by(event_year=selected_year).order_by(RSVP.id)
+    ).scalars().all()
     return _csv_response(rows, f'rsvp_{selected_year}.csv')
 
 
@@ -802,10 +840,9 @@ def export_volunteers():
     if guard:
         return guard
     selected_year = request.args.get('year', type=int, default=compute_event_year())
-    with get_db() as conn:
-        rows = conn.execute(
-            'SELECT * FROM volunteer WHERE event_year = ? ORDER BY id', (selected_year,)
-        ).fetchall()
+    rows = db.session.execute(
+        db.select(Volunteer).filter_by(event_year=selected_year).order_by(Volunteer.id)
+    ).scalars().all()
     return _csv_response(rows, f'volunteers_{selected_year}.csv')
 
 
@@ -815,10 +852,9 @@ def export_teams():
     if guard:
         return guard
     selected_year = request.args.get('year', type=int, default=compute_event_year())
-    with get_db() as conn:
-        rows = conn.execute(
-            'SELECT * FROM teams WHERE event_year = ? ORDER BY id', (selected_year,)
-        ).fetchall()
+    rows = db.session.execute(
+        db.select(Team).filter_by(event_year=selected_year).order_by(Team.id)
+    ).scalars().all()
     return _csv_response(rows, f'teams_{selected_year}.csv')
 
 
@@ -827,24 +863,22 @@ def export_bracket():
     guard = admin_required()
     if guard:
         return guard
-    with get_db() as conn:
-        t = _get_active_tournament(conn)
-        if not t:
-            flash('No bracket exists yet.')
-            return redirect(url_for('admin_bracket'))
-        rows = conn.execute(
-            '''SELECT m.id, m.round, m.match_number,
-                      t1.country AS team1, t2.country AS team2,
-                      w.country  AS winner,
-                      m.team1_score, m.team2_score
-               FROM matches m
-               LEFT JOIN teams t1 ON m.team1_id  = t1.id
-               LEFT JOIN teams t2 ON m.team2_id  = t2.id
-               LEFT JOIN teams w  ON m.winner_id = w.id
-               WHERE m.tournament_id = ?
-               ORDER BY m.round, m.match_number''',
-            (t['id'],)
-        ).fetchall()
+    t = _get_active_tournament()
+    if not t:
+        flash('No bracket exists yet.')
+        return redirect(url_for('admin_bracket'))
+    rows = db.session.execute(text(
+        '''SELECT m.id, m.round, m.match_number,
+                  t1.country AS team1, t2.country AS team2,
+                  w.country  AS winner,
+                  m.team1_score, m.team2_score
+           FROM matches m
+           LEFT JOIN teams t1 ON m.team1_id  = t1.id
+           LEFT JOIN teams t2 ON m.team2_id  = t2.id
+           LEFT JOIN teams w  ON m.winner_id = w.id
+           WHERE m.tournament_id = :tid
+           ORDER BY m.round, m.match_number'''
+    ), {'tid': t.id}).fetchall()
     return _csv_response(rows, 'bracket.csv')
 
 
