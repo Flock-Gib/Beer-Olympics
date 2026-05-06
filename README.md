@@ -92,6 +92,36 @@ Both locations are excluded from git via `.gitignore`.
 | `tournament` | Current bracket version and locked flag |
 | `matches` | Individual match records with seeds, scores, and winners |
 
+### Multi-year data (`event_year`)
+
+Every row in `teams`, `rsvp`, `volunteer`, and `photos` includes an
+`event_year INTEGER` column that segments data by event occurrence.
+
+**Rollover logic** — the active event year is computed at runtime:
+
+- If today is **on or before June 19** → `event_year = current calendar year`
+- If today is **after June 19** → `event_year = current calendar year + 1`
+
+This means signups automatically start counting toward the _next_ year's
+event the day after the event ends. No data is ever deleted.
+
+**Viewing prior years (admin dashboard)**
+
+Append `?year=YYYY` to the dashboard or any export URL:
+
+```
+/dashboard?year=2025
+/export/rsvp?year=2025
+/export/volunteers?year=2025
+/export/teams?year=2025
+```
+
+The dashboard always defaults to the current active event year.
+
+**Existing data migration** — on first startup after this change the app
+automatically adds the `event_year` column to any existing tables and
+backfills all legacy rows with the current active event year.
+
 ---
 
 ## Tournament Bracket

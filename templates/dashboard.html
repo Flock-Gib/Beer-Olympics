@@ -40,6 +40,11 @@
     <div class="dashboard-header">
         <span class="logo">🎯 Juneteenth at Gibby's — Admin</span>
         <div>
+            <span style="color:#ffeaa7; font-size:0.9em;">Event Year: <strong>{{ selected_year }}</strong>
+                {% if selected_year != event_year %}
+                  &nbsp;(<a href="/dashboard">current: {{ event_year }}</a>)
+                {% endif %}
+            </span>
             <a href="/admin/bracket">🏆 Bracket</a>
             <a href="/">Home</a>
             <a href="/logout">Logout</a>
@@ -58,11 +63,18 @@
 
     <div class="container">
 
+        <p style="color:#aaa; font-size:0.85em; margin-bottom:6px;">
+            Viewing event year <strong>{{ selected_year }}</strong>.
+            To view a different year append <code>?year=YYYY</code> to the URL,
+            e.g. <code>/dashboard?year={{ selected_year - 1 }}</code>.
+            Exports also accept <code>?year=YYYY</code>.
+        </p>
+
         <!-- RSVPs -->
         <div class="dash-section">
             <h2>RSVPs <span class="badge">{{ rsvps|length }}</span></h2>
             <div class="section-actions">
-                <a href="/export/rsvp">⬇ Export CSV</a>
+                <a href="/export/rsvp?year={{ selected_year }}">⬇ Export CSV</a>
             </div>
             <div class="table-wrap">
             <table>
@@ -101,7 +113,7 @@
         <div class="dash-section">
             <h2>Volunteers <span class="badge">{{ volunteers|length }}</span></h2>
             <div class="section-actions">
-                <a href="/export/volunteers">⬇ Export CSV</a>
+                <a href="/export/volunteers?year={{ selected_year }}">⬇ Export CSV</a>
             </div>
             <div class="table-wrap">
             <table>
@@ -138,7 +150,7 @@
         <div class="dash-section">
             <h2>Team Signups <span class="badge">{{ teams|length }}</span></h2>
             <div class="section-actions">
-                <a href="/export/teams">⬇ Export CSV</a>
+                <a href="/export/teams?year={{ selected_year }}">⬇ Export CSV</a>
             </div>
             <div class="table-wrap">
             <table>
