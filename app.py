@@ -18,6 +18,22 @@ EVENT_NAME  = "Juneteenth at Gibby's"
 EVENT_MONTH = 6   # June
 EVENT_DAY   = 19  # Juneteenth
 
+
+def compute_event_year(today=None):
+    """Return the active event year.
+
+    Rolls over to next calendar year the day after EVENT_DAY (June 19), so
+    June 20 onward the "active" year becomes current_year + 1.
+    """
+    if today is None:
+        today = datetime.datetime.now().date()
+    year = today.year
+    candidate = datetime.date(year, EVENT_MONTH, EVENT_DAY)
+    if today > candidate:
+        year += 1
+    return year
+
+
 # Load environment variables
 load_dotenv()
 
@@ -53,7 +69,8 @@ def init_db():
                 country TEXT NOT NULL,
                 captain_name TEXT NOT NULL,
                 captain_email TEXT,
-                teammate_name TEXT NOT NULL
+                teammate_name TEXT NOT NULL,
+                event_year INTEGER
             );
 
             CREATE TABLE IF NOT EXISTS rsvp (
@@ -63,7 +80,8 @@ def init_db():
                 email TEXT,
                 status TEXT NOT NULL DEFAULT 'attending',
                 guests INTEGER DEFAULT 0,
-                notes TEXT
+                notes TEXT,
+                event_year INTEGER
             );
 
             CREATE TABLE IF NOT EXISTS volunteer (
@@ -75,7 +93,8 @@ def init_db():
                 category TEXT,
                 item_description TEXT NOT NULL,
                 quantity TEXT,
-                notes TEXT
+                notes TEXT,
+                event_year INTEGER
             );
 
             CREATE TABLE IF NOT EXISTS photos (
@@ -83,7 +102,8 @@ def init_db():
                 timestamp TEXT NOT NULL,
                 uploader_name TEXT,
                 caption TEXT,
-                filename TEXT NOT NULL
+                filename TEXT NOT NULL,
+                event_year INTEGER
             );
 
             CREATE TABLE IF NOT EXISTS tournament (
@@ -108,7 +128,25 @@ def init_db():
         """)
 
 
+_ALLOWED_EVENT_YEAR_TABLES = frozenset({'teams', 'rsvp', 'volunteer', 'photos'})
+
+
+def _migrate_event_year():
+    """Add event_year column to legacy tables if missing and backfill existing rows."""
+    year = compute_event_year()
+    with get_db() as conn:
+        for table in _ALLOWED_EVENT_YEAR_TABLES:
+            cols = [r[1] for r in conn.execute(f'PRAGMA table_info({table})').fetchall()]
+            if 'event_year' not in cols:
+                conn.execute(f'ALTER TABLE {table} ADD COLUMN event_year INTEGER')
+            conn.execute(
+                f'UPDATE {table} SET event_year = ? WHERE event_year IS NULL',
+                (year,)
+            )
+
+
 init_db()
+_migrate_event_year()
 
 # ── Admin credentials ───────────────────────────────────────────────────────
 ADMIN_USERNAME = os.getenv('ADMIN_USERNAME', 'admin')
@@ -215,12 +253,16 @@ def _place_winner_in_next(conn, match_id, winner_id):
         conn.execute('UPDATE matches SET team2_id=? WHERE id=?', (winner_id, next_id))
 
 
-def generate_bracket(conn):
+def generate_bracket(conn, event_year=None):
     """
     Generate a fresh single-elimination bracket from all current teams.
     Returns the new tournament_id, or None if fewer than 2 teams.
     """
-    teams = conn.execute('SELECT id, country FROM teams ORDER BY id').fetchall()
+    if event_year is None:
+        event_year = compute_event_year()
+    teams = conn.execute(
+        'SELECT id, country FROM teams WHERE event_year = ? ORDER BY id', (event_year,)
+    ).fetchall()
     n = len(teams)
     if n < 2:
         return None
@@ -303,14 +345,18 @@ def generate_bracket(conn):
     return tournament_id
 
 
-def get_or_regenerate_bracket(conn):
+def get_or_regenerate_bracket(conn, event_year=None):
     """
     Return the active tournament, auto-regenerating if the bracket is not
     locked and the team roster has changed since it was last generated.
     Returns (tournament_row, was_regenerated).
     """
+    if event_year is None:
+        event_year = compute_event_year()
     t = _get_active_tournament(conn)
-    team_count = conn.execute('SELECT COUNT(*) FROM teams').fetchone()[0]
+    team_count = conn.execute(
+        'SELECT COUNT(*) FROM teams WHERE event_year = ?', (event_year,)
+    ).fetchone()[0]
 
     if team_count < 2:
         return None, False
@@ -337,7 +383,7 @@ def get_or_regenerate_bracket(conn):
         conn.execute('DELETE FROM matches WHERE tournament_id=?', (t['id'],))
         conn.execute('DELETE FROM tournament WHERE id=?', (t['id'],))
 
-    new_tid = generate_bracket(conn)
+    new_tid = generate_bracket(conn, event_year)
     if new_tid is None:
         return None, False
     new_t = conn.execute('SELECT * FROM tournament WHERE id=?', (new_tid,)).fetchone()
@@ -394,12 +440,8 @@ def build_bracket_context(conn, tournament):
 @app.context_processor
 def inject_event_info():
     """Inject dynamic year and event date string into every template."""
-    now = datetime.datetime.now()
-    today = now.date()
-    year = today.year
-    candidate = datetime.date(year, EVENT_MONTH, EVENT_DAY)
-    if today > candidate:
-        year += 1
+    today = datetime.datetime.now().date()
+    year = compute_event_year(today)
     event_date_str = datetime.date(year, EVENT_MONTH, EVENT_DAY).strftime('%B %-d, %Y')
     return dict(
         current_year=today.year,
@@ -445,8 +487,8 @@ def signup():
 
         with get_db() as conn:
             conn.execute(
-                'INSERT INTO teams (timestamp, country, captain_name, captain_email, teammate_name) VALUES (?,?,?,?,?)',
-                (now_ts(), country, captain_name, captain_email, teammate_name)
+                'INSERT INTO teams (timestamp, country, captain_name, captain_email, teammate_name, event_year) VALUES (?,?,?,?,?,?)',
+                (now_ts(), country, captain_name, captain_email, teammate_name, compute_event_year())
             )
             # Auto-regenerate bracket if not locked
             get_or_regenerate_bracket(conn)
@@ -476,8 +518,8 @@ def rsvp():
 
         with get_db() as conn:
             conn.execute(
-                'INSERT INTO rsvp (timestamp, name, email, status, guests, notes) VALUES (?,?,?,?,?,?)',
-                (now_ts(), name, email, status, guests, notes)
+                'INSERT INTO rsvp (timestamp, name, email, status, guests, notes, event_year) VALUES (?,?,?,?,?,?,?)',
+                (now_ts(), name, email, status, guests, notes, compute_event_year())
             )
         flash(f"Thank you, {name}! Your RSVP has been received. 🍺")
         return redirect(url_for('index'))
@@ -506,9 +548,9 @@ def volunteer():
 
         with get_db() as conn:
             conn.execute(
-                'INSERT INTO volunteer (timestamp, name, email, phone, category, item_description, quantity, notes) '
-                'VALUES (?,?,?,?,?,?,?,?)',
-                (now_ts(), name, email, phone, category, item_description, quantity, notes)
+                'INSERT INTO volunteer (timestamp, name, email, phone, category, item_description, quantity, notes, event_year) '
+                'VALUES (?,?,?,?,?,?,?,?,?)',
+                (now_ts(), name, email, phone, category, item_description, quantity, notes, compute_event_year())
             )
         flash('Thank you for volunteering to bring something! 🙌')
         return redirect(url_for('index'))
@@ -543,15 +585,16 @@ def gallery():
 
         with get_db() as conn:
             conn.execute(
-                'INSERT INTO photos (timestamp, uploader_name, caption, filename) VALUES (?,?,?,?)',
-                (now_ts(), uploader_name, caption, unique_name)
+                'INSERT INTO photos (timestamp, uploader_name, caption, filename, event_year) VALUES (?,?,?,?,?)',
+                (now_ts(), uploader_name, caption, unique_name, compute_event_year())
             )
         flash('Photo uploaded successfully! 📸')
         return redirect(url_for('gallery'))
 
     with get_db() as conn:
         photos = conn.execute(
-            'SELECT * FROM photos ORDER BY id DESC'
+            'SELECT * FROM photos WHERE event_year = ? ORDER BY id DESC',
+            (compute_event_year(),)
         ).fetchall()
 
     return render_template('gallery.html', photos=photos)
@@ -579,11 +622,21 @@ def dashboard():
     if guard:
         return guard
 
+    selected_year = request.args.get('year', type=int, default=compute_event_year())
+
     with get_db() as conn:
-        teams = conn.execute('SELECT * FROM teams ORDER BY id').fetchall()
-        rsvps = conn.execute('SELECT * FROM rsvp ORDER BY id').fetchall()
-        volunteers = conn.execute('SELECT * FROM volunteer ORDER BY id').fetchall()
-        photos = conn.execute('SELECT * FROM photos ORDER BY id DESC').fetchall()
+        teams = conn.execute(
+            'SELECT * FROM teams WHERE event_year = ? ORDER BY id', (selected_year,)
+        ).fetchall()
+        rsvps = conn.execute(
+            'SELECT * FROM rsvp WHERE event_year = ? ORDER BY id', (selected_year,)
+        ).fetchall()
+        volunteers = conn.execute(
+            'SELECT * FROM volunteer WHERE event_year = ? ORDER BY id', (selected_year,)
+        ).fetchall()
+        photos = conn.execute(
+            'SELECT * FROM photos WHERE event_year = ? ORDER BY id DESC', (selected_year,)
+        ).fetchall()
 
     return render_template(
         'dashboard.html',
@@ -591,6 +644,7 @@ def dashboard():
         rsvps=rsvps,
         volunteers=volunteers,
         photos=photos,
+        selected_year=selected_year,
     )
 
 
@@ -608,7 +662,9 @@ def bracket():
     with get_db() as conn:
         tournament, _ = get_or_regenerate_bracket(conn)
         ctx = build_bracket_context(conn, tournament)
-        team_count = conn.execute('SELECT COUNT(*) FROM teams').fetchone()[0]
+        team_count = conn.execute(
+            'SELECT COUNT(*) FROM teams WHERE event_year = ?', (compute_event_year(),)
+        ).fetchone()[0]
     return render_template(
         'bracket.html',
         tournament=tournament,
@@ -626,9 +682,14 @@ def admin_bracket():
     with get_db() as conn:
         tournament, _ = get_or_regenerate_bracket(conn)
         ctx = build_bracket_context(conn, tournament)
-        team_count = conn.execute('SELECT COUNT(*) FROM teams').fetchone()[0]
+        team_count = conn.execute(
+            'SELECT COUNT(*) FROM teams WHERE event_year = ?', (compute_event_year(),)
+        ).fetchone()[0]
         # Fetch all teams for the winner-selection dropdowns
-        all_teams = conn.execute('SELECT id, country FROM teams ORDER BY country').fetchall()
+        all_teams = conn.execute(
+            'SELECT id, country FROM teams WHERE event_year = ? ORDER BY country',
+            (compute_event_year(),)
+        ).fetchall()
 
     return render_template(
         'admin_bracket.html',
@@ -727,9 +788,12 @@ def export_rsvp():
     guard = admin_required()
     if guard:
         return guard
+    selected_year = request.args.get('year', type=int, default=compute_event_year())
     with get_db() as conn:
-        rows = conn.execute('SELECT * FROM rsvp ORDER BY id').fetchall()
-    return _csv_response(rows, 'rsvp.csv')
+        rows = conn.execute(
+            'SELECT * FROM rsvp WHERE event_year = ? ORDER BY id', (selected_year,)
+        ).fetchall()
+    return _csv_response(rows, f'rsvp_{selected_year}.csv')
 
 
 @app.route('/export/volunteers')
@@ -737,9 +801,12 @@ def export_volunteers():
     guard = admin_required()
     if guard:
         return guard
+    selected_year = request.args.get('year', type=int, default=compute_event_year())
     with get_db() as conn:
-        rows = conn.execute('SELECT * FROM volunteer ORDER BY id').fetchall()
-    return _csv_response(rows, 'volunteers.csv')
+        rows = conn.execute(
+            'SELECT * FROM volunteer WHERE event_year = ? ORDER BY id', (selected_year,)
+        ).fetchall()
+    return _csv_response(rows, f'volunteers_{selected_year}.csv')
 
 
 @app.route('/export/teams')
@@ -747,9 +814,12 @@ def export_teams():
     guard = admin_required()
     if guard:
         return guard
+    selected_year = request.args.get('year', type=int, default=compute_event_year())
     with get_db() as conn:
-        rows = conn.execute('SELECT * FROM teams ORDER BY id').fetchall()
-    return _csv_response(rows, 'teams.csv')
+        rows = conn.execute(
+            'SELECT * FROM teams WHERE event_year = ? ORDER BY id', (selected_year,)
+        ).fetchall()
+    return _csv_response(rows, f'teams_{selected_year}.csv')
 
 
 @app.route('/export/bracket')
