@@ -27,7 +27,6 @@ body {
     animation: gradientFlow 15s ease infinite;
     font-family: 'Inter', 'Arial', sans-serif;
     color: #2d3436;
-    padding-top: 70px;
     /* Extra room for iPhone notch/status-bar when viewport-fit=cover is set */
     padding-top: calc(70px + env(safe-area-inset-top, 0px));
     min-height: 100vh;
