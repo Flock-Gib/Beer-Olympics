@@ -201,6 +201,51 @@ Visit `/admin/bracket` to:
 | `/export/teams` | All team signups as CSV |
 | `/export/bracket` | All bracket matches with scores and winners as CSV |
 
+### Database diagnostics
+
+#### Startup log
+
+Every time the app starts it prints a diagnostics block to stdout (visible in Render **Logs**):
+
+```
+=== DB DIAGNOSTICS ===
+  Dialect : postgresql          ← confirms Postgres is in use (not sqlite)
+  URL     : postgresql://***@hostname:5432/dbname
+  Table teams: EXISTS (4 rows)
+  Table rsvp: EXISTS (12 rows)
+  Table volunteer: EXISTS (3 rows)
+  Table photos: EXISTS (7 rows)
+=== END DB DIAGNOSTICS ===
+```
+
+**What to look for:**
+- `Dialect : postgresql` → production Postgres is connected ✅
+- `Dialect : sqlite` → `DATABASE_URL` is not set or not being read ⚠️
+- `Table … : MISSING` → tables weren't created; redeploy or check `db.create_all()` ran
+- `ERROR: could not connect` → check `DATABASE_URL` value and Render Postgres status
+
+#### `/admin/db-check` endpoint
+
+After logging in as admin, visit `/admin/db-check` (or hit it with `curl`) for a live JSON snapshot:
+
+```json
+{
+  "dialect": "postgresql",
+  "url_redacted": "postgresql://***@oregon-postgres.render.com:5432/mydb",
+  "tables": {
+    "teams":      { "exists": true, "row_count": 4  },
+    "rsvp":       { "exists": true, "row_count": 12 },
+    "volunteer":  { "exists": true, "row_count": 3  },
+    "photos":     { "exists": true, "row_count": 7  },
+    "tournament": { "exists": true, "row_count": 1  },
+    "matches":    { "exists": true, "row_count": 6  }
+  },
+  "status": "ok"
+}
+```
+
+Credentials are **never** included in the output — only the host and database name are visible.
+
 ---
 
 ## Pages & Routes
@@ -219,6 +264,7 @@ Visit `/admin/bracket` to:
 | `/admin` | Admin login |
 | `/dashboard` | Admin dashboard (protected) |
 | `/admin/bracket` | Admin bracket management (protected) |
+| `/admin/db-check` | Live DB diagnostics JSON (admin-protected) |
 
 ---
 
