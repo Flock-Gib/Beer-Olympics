@@ -92,7 +92,7 @@ The SQLite file and uploads directory are excluded from git via `.gitignore`.
 4. Deploy — the app calls `db.create_all()` on startup and creates all tables automatically.
    No manual migration step is needed for a fresh database.
 
-> **Note:** Render's `postgres://` scheme is normalised to `postgresql://` automatically by the app so SQLAlchemy accepts it.
+> **Note:** Render's `postgres://` scheme is normalized to `postgresql://` automatically by the app so SQLAlchemy accepts it.
 
 ### Local development (SQLite fallback)
 

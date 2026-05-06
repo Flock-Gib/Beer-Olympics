@@ -119,7 +119,7 @@ class Tournament(db.Model):
     __tablename__ = 'tournament'
     id = db.Column(db.Integer, primary_key=True)
     created_at = db.Column(db.Text, nullable=False)
-    locked = db.Column(db.Integer, nullable=False, default=0, server_default='0')
+    locked = db.Column(db.Integer, nullable=False, server_default='0')
 
 
 class Match(db.Model):
@@ -498,7 +498,6 @@ def signup():
             event_year=compute_event_year(),
         )
         db.session.add(team)
-        db.session.flush()
         # Auto-regenerate bracket if not locked
         get_or_regenerate_bracket()
         db.session.commit()
@@ -685,10 +684,11 @@ def logout():
 
 @app.route('/bracket')
 def bracket():
-    tournament, _ = get_or_regenerate_bracket()
+    tournament, was_regenerated = get_or_regenerate_bracket()
+    if was_regenerated:
+        db.session.commit()
     ctx = build_bracket_context(tournament)
     team_count = db.session.query(Team).filter_by(event_year=compute_event_year()).count()
-    db.session.commit()
     return render_template(
         'bracket.html',
         tournament=tournament,
@@ -703,7 +703,9 @@ def admin_bracket():
     if guard:
         return guard
 
-    tournament, _ = get_or_regenerate_bracket()
+    tournament, was_regenerated = get_or_regenerate_bracket()
+    if was_regenerated:
+        db.session.commit()
     ctx = build_bracket_context(tournament)
     team_count = db.session.query(Team).filter_by(event_year=compute_event_year()).count()
     # Fetch all teams for the winner-selection dropdowns
@@ -712,7 +714,6 @@ def admin_bracket():
         .filter_by(event_year=compute_event_year())
         .order_by(Team.country)
     ).scalars().all()
-    db.session.commit()
 
     return render_template(
         'admin_bracket.html',
