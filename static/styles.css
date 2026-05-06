@@ -27,7 +27,8 @@ body {
     animation: gradientFlow 15s ease infinite;
     font-family: 'Inter', 'Arial', sans-serif;
     color: #2d3436;
-    padding-top: 70px;
+    /* Extra room for iPhone notch/status-bar when viewport-fit=cover is set */
+    padding-top: calc(70px + env(safe-area-inset-top, 0px));
     min-height: 100vh;
 }
 
@@ -51,6 +52,8 @@ a:hover { text-decoration: underline; }
     justify-content: space-between;
     align-items: center;
     padding: 10px 20px;
+    /* Push content below iPhone notch/status-bar */
+    padding-top: max(10px, env(safe-area-inset-top, 10px));
     background: rgba(0, 0, 0, 0.72);
     backdrop-filter: blur(6px);
     position: fixed;
@@ -73,9 +76,13 @@ a:hover { text-decoration: underline; }
     border: none;
     color: white;
     cursor: pointer;
+    /* Minimum 44×44 px tap target (Apple HIG guideline) */
+    min-width: 44px;
+    min-height: 44px;
     padding: 8px 12px;
     display: none;
     line-height: 1;
+    touch-action: manipulation;
 }
 
 ul.navbar {
@@ -108,29 +115,52 @@ ul.navbar li a.active {
 }
 
 @media (max-width: 1024px) {
-    .hamburger { display: block; }
+    .hamburger { display: flex; align-items: center; justify-content: center; }
 
     ul.navbar {
         flex-direction: column;
         align-items: stretch;
         display: none;
-        background: rgba(0, 0, 0, 0.88);
+        background: rgba(0, 0, 0, 0.92);
         padding: 8px;
         position: absolute;
-        top: 60px; right: 16px;
+        top: calc(60px + env(safe-area-inset-top, 0px));
+        right: 16px;
         border-radius: 10px;
-        min-width: 180px;
+        min-width: 200px;
         box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+        /* Scrollable when menu is taller than the viewport */
+        max-height: calc(90vh - 60px - env(safe-area-inset-top, 0px));
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
     }
 
     ul.navbar.show { display: flex; }
 
     ul.navbar li a {
         font-size: 1em;
-        padding: 10px 14px;
+        /* Full-width rows with ≥44 px tap target */
+        display: flex;
+        align-items: center;
+        min-height: 44px;
+        padding: 10px 16px;
         border-radius: 6px;
+        touch-action: manipulation;
     }
 }
+
+/* ── Nav overlay (shown behind open menu on mobile) ───────── */
+#nav-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 999;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+}
+
+#nav-overlay.show { display: block; }
 
 /* ── Page containers ─────────────────────────────────────────── */
 .container {
