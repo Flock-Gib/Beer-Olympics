@@ -14,7 +14,7 @@ A fun event website for the annual **Juneteenth at Gibby's** celebration featuri
 | Layer | Technology |
 |-------|-----------|
 | Backend | Python / Flask |
-| Database | SQLite (via Python `sqlite3`) |
+| Database | PostgreSQL (production) / SQLite (local dev) via SQLAlchemy |
 | Frontend | HTML5, CSS3 (no JS framework) |
 | Server | Gunicorn (production) |
 
@@ -61,6 +61,7 @@ cp .env.example .env
 | `ADMIN_PASSWORD` | `Flock1234!` | Admin dashboard password — **change this in production** |
 | `EVENT_PASSWORD` | `juneteenth2025` | Password attendees use to register teams |
 | `FLASK_ENV` | `development` | Set to `production` on live server |
+| `DATABASE_URL` | *(unset = SQLite)* | PostgreSQL connection URL for production (see below) |
 
 ### 5. Run the development server
 
@@ -76,10 +77,35 @@ Open [http://localhost:5000](http://localhost:5000) in your browser.
 
 | What | Where |
 |------|-------|
-| SQLite database | `data/beer_olympics.db` (auto-created on first run) |
+| PostgreSQL database | Render Postgres (production) — set `DATABASE_URL` env var |
+| SQLite database | `data/beer_olympics.db` (auto-created for local dev when `DATABASE_URL` is not set) |
 | Uploaded photos | `static/uploads/` (auto-created on first run) |
 
-Both locations are excluded from git via `.gitignore`.
+The SQLite file and uploads directory are excluded from git via `.gitignore`.
+
+### Render Postgres setup
+
+1. In your Render dashboard → **New +** → **PostgreSQL**.
+2. After it provisions, copy the **Internal Database URL** (starts with `postgres://`).
+3. In your Render **Web Service** → **Environment**, add:
+   - `DATABASE_URL` = *(paste the Internal Database URL)*
+4. Deploy — the app calls `db.create_all()` on startup and creates all tables automatically.
+   No manual migration step is needed for a fresh database.
+
+> **Note:** Render's `postgres://` scheme is normalized to `postgresql://` automatically by the app so SQLAlchemy accepts it.
+
+### Local development (SQLite fallback)
+
+Leave `DATABASE_URL` unset (or omit it from your `.env`).  
+The app falls back to `sqlite:///data/beer_olympics.db` automatically.
+
+```bash
+# .env  — no DATABASE_URL needed for local dev
+FLASK_SECRET_KEY=any-local-secret
+ADMIN_USERNAME=admin
+ADMIN_PASSWORD=localpass
+EVENT_PASSWORD=juneteenth2025
+```
 
 ### Database tables
 
@@ -205,7 +231,7 @@ Visit `/admin/bracket` to:
 
 ---
 
-## Production Deployment (Render / Heroku)
+## Production Deployment (Render)
 
 The `procfile` is already configured for Gunicorn:
 
@@ -213,7 +239,19 @@ The `procfile` is already configured for Gunicorn:
 web: gunicorn app:app
 ```
 
-Set all environment variables in your hosting provider's dashboard (not in a committed `.env` file).
+Set all environment variables in your Render Web Service dashboard:
+
+| Variable | Where to get it |
+|----------|----------------|
+| `DATABASE_URL` | Render Postgres → **Internal Database URL** |
+| `FLASK_SECRET_KEY` | Generate a long random string |
+| `ADMIN_USERNAME` / `ADMIN_PASSWORD` | Choose your own |
+| `EVENT_PASSWORD` | Share with invited attendees |
+
+On first deploy the app will automatically create all database tables via `db.create_all()`.
+No manual init step is needed.
+
+> **Do not commit secrets to `.env`** — set them in the Render dashboard only.
 
 ---
 
