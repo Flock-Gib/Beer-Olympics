@@ -2,11 +2,9 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Cornhole Rules – {{ event_name }} {{ event_year }}</title>
     <link rel="stylesheet" href="/static/styles.css">
-    <style>
-        .rules-container {
             max-width: 740px;
             margin: 0 auto;
             padding: 40px 20px 60px;
@@ -59,7 +57,7 @@
     <nav>
       <div class="navbar-container">
         <span class="logo">🎯 Juneteenth at Gibby's</span>
-        <button class="hamburger" aria-label="Toggle navigation" onclick="toggleNavbar()">☰</button>
+        <button class="hamburger" aria-label="Toggle navigation" aria-expanded="false" aria-controls="navbar">☰</button>
         <ul class="navbar" id="navbar">
           <li><a href="/">Home</a></li>
           <li><a href="/event">About the Event</a></li>
@@ -161,10 +159,6 @@
         <p>&copy; {{ current_year }} {{ event_name }}</p>
     </footer>
 
-    <script>
-        function toggleNavbar() {
-            document.getElementById("navbar").classList.toggle("show");
-        }
-    </script>
+    <script src="/static/nav.js"></script>
 </body>
 </html>
