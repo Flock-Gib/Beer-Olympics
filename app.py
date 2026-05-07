@@ -1,9 +1,11 @@
 from flask import (
     Flask, render_template, request, redirect, url_for,
-    flash, session, send_file, abort
+    flash, session, send_file, abort, jsonify
 )
 import os
+import re
 import uuid
+import logging
 import datetime
 import csv
 import io
@@ -64,6 +66,14 @@ app.config['SQLALCHEMY_DATABASE_URI'] = _raw_db_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
+
+
+# ── DB diagnostics helpers ───────────────────────────────────────────────────
+
+def _redact_db_url(url: str) -> str:
+    """Return the DB URL with username/password replaced by *** for safe logging."""
+    # Replace  scheme://user:pass@host  or  scheme://user@host  with  scheme://***@host
+    return re.sub(r'(?<=://)([^:@/]+)(:[^@/]*)?(?=@)', '***', url)
 
 
 # ── Models ───────────────────────────────────────────────────────────────────
@@ -141,6 +151,48 @@ def init_db():
     db.create_all()
 
 
+# ── DB diagnostics ────────────────────────────────────────────────────────────
+
+# Single source of truth: ordered mapping of table-name → ORM model class.
+# "startup" models (first 4) are printed at startup; all 6 appear in /admin/db-check.
+_DIAGNOSTIC_MODELS: dict[str, type] = {
+    'teams':      Team,
+    'rsvp':       RSVP,
+    'volunteer':  Volunteer,
+    'photos':     Photo,
+    'tournament': Tournament,
+    'matches':    Match,
+}
+# Subset logged at startup (the four tables that accumulate user-submitted data)
+_STARTUP_DIAG_TABLES = ('teams', 'rsvp', 'volunteer', 'photos')
+
+
+def _log_db_diagnostics():
+    """Print DB connection info and table status to stdout at startup."""
+    dialect = db.engine.dialect.name
+    raw_url = app.config.get('SQLALCHEMY_DATABASE_URI', '')
+    redacted = _redact_db_url(raw_url)
+
+    print('=== DB DIAGNOSTICS ===', flush=True)
+    print(f'  Dialect : {dialect}', flush=True)
+    print(f'  URL     : {redacted}', flush=True)
+
+    try:
+        insp = sa_inspect(db.engine)
+        for table_name in _STARTUP_DIAG_TABLES:
+            model = _DIAGNOSTIC_MODELS[table_name]
+            if insp.has_table(table_name):
+                count = db.session.query(model).count()
+                print(f'  Table {table_name}: EXISTS ({count} rows)', flush=True)
+            else:
+                print(f'  Table {table_name}: MISSING', flush=True)
+    except Exception:
+        logging.exception('DB connection/table check failed')
+        print('  ERROR: could not connect to database — see traceback above', flush=True)
+
+    print('=== END DB DIAGNOSTICS ===', flush=True)
+
+
 _ALLOWED_EVENT_YEAR_TABLES = frozenset({'teams', 'rsvp', 'volunteer', 'photos'})
 
 
@@ -169,6 +221,7 @@ def _migrate_event_year():
 with app.app_context():
     init_db()
     _migrate_event_year()
+    _log_db_diagnostics()
 
 # ── Admin credentials ───────────────────────────────────────────────────────
 ADMIN_USERNAME = os.getenv('ADMIN_USERNAME', 'admin')
@@ -678,6 +731,39 @@ def logout():
     session.pop('admin', None)
     flash('You have been logged out.')
     return redirect(url_for('index'))
+
+
+@app.route('/admin/db-check')
+def admin_db_check():
+    """Admin-only JSON endpoint: confirms DB dialect, redacted URL, and table row counts."""
+    guard = admin_required()
+    if guard:
+        return guard
+
+    dialect = db.engine.dialect.name
+    raw_url = app.config.get('SQLALCHEMY_DATABASE_URI', '')
+    redacted_url = _redact_db_url(raw_url)
+
+    result: dict[str, object] = {
+        'dialect': dialect,
+        'url_redacted': redacted_url,
+        'tables': {},
+        'status': 'ok',
+    }
+
+    try:
+        insp = sa_inspect(db.engine)
+        for table_name, model in _DIAGNOSTIC_MODELS.items():
+            if insp.has_table(table_name):
+                count = db.session.query(model).count()
+                result['tables'][table_name] = {'exists': True, 'row_count': count}
+            else:
+                result['tables'][table_name] = {'exists': False, 'row_count': None}
+    except Exception as exc:
+        result['status'] = 'error'
+        result['error'] = str(exc)
+
+    return jsonify(result)
 
 
 # ── Bracket routes ────────────────────────────────────────────────────────────
