@@ -75,6 +75,10 @@
             <h2>RSVPs <span class="badge">{{ rsvps|length }}</span></h2>
             <div class="section-actions">
                 <a href="/export/rsvp?year={{ selected_year }}">⬇ Export CSV</a>
+                &nbsp;|&nbsp;
+                <a href="/export/phones?year={{ selected_year }}">📱 Export opted-in phones (CSV)</a>
+                &nbsp;
+                <a href="/export/phones?year={{ selected_year }}&format=txt" title="Comma-separated list for copy/paste into your phone">📋 phones.txt</a>
             </div>
             <div class="table-wrap">
             <table>

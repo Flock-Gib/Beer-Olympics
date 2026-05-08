@@ -112,11 +112,28 @@ EVENT_PASSWORD=juneteenth2025
 | Table | Description |
 |-------|-------------|
 | `teams` | Team sign-up records |
-| `rsvp` | General RSVP records |
+| `rsvp` | General RSVP records (includes optional phone + SMS consent) |
 | `volunteer` | Volunteer "bring items" signups |
 | `photos` | Photo upload metadata |
 | `tournament` | Current bracket version and locked flag |
 | `matches` | Individual match records with seeds, scores, and winners |
+
+#### RSVP fields
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `name` | TEXT | Attendee name (required) |
+| `email` | TEXT | Email address (optional) |
+| `status` | TEXT | `attending` / `not_attending` / `maybe` |
+| `guests` | INTEGER | Number of additional guests |
+| `notes` | TEXT | Free-text notes |
+| `phone` | TEXT | Phone number (optional; required if SMS opt-in checked) |
+| `sms_opt_in` | INTEGER | `1` = consented to receive texts, `0` = no consent |
+| `event_year` | INTEGER | Active event year at time of submission |
+
+> **Privacy:** Phone numbers are never displayed in the admin dashboard table.
+> They are available only via the `/export/phones` export endpoint.
+> No automated SMS is sent by the app.
 
 ### Multi-year data (`event_year`)
 
@@ -200,6 +217,24 @@ Visit `/admin/bracket` to:
 | `/export/volunteers` | All volunteer signups as CSV |
 | `/export/teams` | All team signups as CSV |
 | `/export/bracket` | All bracket matches with scores and winners as CSV |
+| `/export/phones` | Opted-in phone numbers (attending + sms_opt_in) as CSV |
+| `/export/phones?format=txt` | Comma-separated phone list for copy/paste into your phone |
+
+All export endpoints accept an optional `?year=YYYY` parameter.
+
+#### Phone number export
+
+The `/export/phones` endpoint returns only RSVP entries where:
+- `status = attending`
+- `sms_opt_in = 1`
+- phone number is present
+- Duplicate phone numbers are removed (first occurrence wins)
+
+Use `?format=txt` to get a plain comma-separated list that is easy to paste
+into your phone's messaging app for a manual mass text.
+
+> **Note:** This app does **not** send any automated SMS messages.
+> The organizer uses the exported phone list to send messages manually.
 
 ### Database diagnostics
 

@@ -74,6 +74,22 @@
                           placeholder="Dietary restrictions, questions, etc."></textarea>
             </div>
 
+            <div class="form-group">
+                <label for="phone">Phone Number <span class="optional">(optional)</span></label>
+                <input type="tel" id="phone" name="phone"
+                       placeholder="e.g. 555-867-5309" autocomplete="tel">
+            </div>
+
+            <div class="form-group">
+                <label class="checkbox-label">
+                    <input type="checkbox" id="sms_opt_in" name="sms_opt_in" value="1">
+                    Text me event updates (max 2 texts). Message &amp; data rates may apply.
+                    Reply STOP to opt out.
+                </label>
+                <small class="field-hint">Requires a phone number above. The organizer may send
+                    a reminder text — <strong>no automated messages are sent by this app</strong>.</small>
+            </div>
+
             <button type="submit" class="btn-primary">Submit RSVP 🎯</button>
         </form>
     </div>
