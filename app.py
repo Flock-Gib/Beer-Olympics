@@ -1021,6 +1021,7 @@ def export_phones():
     rows = db.session.execute(
         db.select(RSVP)
         .filter_by(event_year=selected_year, status='attending', sms_opt_in=1)
+        .filter(RSVP.phone.isnot(None))
         .order_by(RSVP.id)
     ).scalars().all()
 
