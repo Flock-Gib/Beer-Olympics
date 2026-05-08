@@ -12,6 +12,12 @@
             padding: 40px 20px 60px;
         }
 
+        .venmo-cards {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 24px;
+        }
+
         .venmo-page h1 {
             text-align: center;
             margin-bottom: 8px;
@@ -30,7 +36,19 @@
             border-radius: 14px;
             padding: 28px 30px;
             box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
-            margin-bottom: 24px;
+            margin-bottom: 0;
+            min-width: 0;
+        }
+
+        @media (min-width: 900px) {
+            .venmo-page {
+                max-width: 1100px;
+            }
+
+            .venmo-cards {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                align-items: start;
+            }
         }
 
         .venmo-card h2 {
@@ -166,62 +184,64 @@
             Scan the QR code below or search the handle in the Venmo app.
         </p>
 
-        <!-- ── Team Entry ── -->
-        <div class="venmo-card">
-            <h2>🎯 Team Entry Fee</h2>
-            <p class="card-subtitle">Required to compete in the cornhole tournament (teams of 2 players)</p>
+        <div class="venmo-cards">
+            <!-- ── Team Entry ── -->
+            <div class="venmo-card">
+                <h2>🎯 Team Entry Fee</h2>
+                <p class="card-subtitle">Required to compete in the cornhole tournament (teams of 2 players)</p>
 
-            <div class="price-badge">$20 per team</div>
+                <div class="price-badge">$20 per team</div>
 
-            <div class="venmo-handle">
-                <span class="venmo-icon">💙</span>
-                <span>@Gibson-StJohn</span>
+                <div class="venmo-handle">
+                    <span class="venmo-icon">💙</span>
+                    <span>@Gibson-StJohn</span>
+                </div>
+
+                <img src="{{ url_for('static', filename='Photos/IMG_9295.PNG') }}"
+                     alt="Venmo QR Code for @Gibson-StJohn"
+                     class="venmo-qr">
+
+                <p style="text-align:center; font-size:0.93em; color:#2d3436;">
+                    💡 Include your <strong>team name</strong> in the Venmo note so we know who paid!
+                </p>
+                <p class="venmo-note">
+                    Payment + team registration must be completed by <strong>June 16th</strong> to secure your spot.
+                    <a href="/signup">Register your team →</a>
+                </p>
             </div>
 
-            <img src="{{ url_for('static', filename='Photos/IMG_9295.PNG') }}"
-                 alt="Venmo QR Code for @Gibson-StJohn"
-                 class="venmo-qr">
+            <!-- ── Supplies Donation ── -->
+            <div class="venmo-card">
+                <h2>🙏 Donate for Supplies</h2>
+                <p class="card-subtitle">
+                    Not competing but still want to help? Every dollar goes toward keeping the party going
+                    — ice, cups, charcoal, coolers, and more!
+                </p>
 
-            <p style="text-align:center; font-size:0.93em; color:#2d3436;">
-                💡 Include your <strong>team name</strong> in the Venmo note so we know who paid!
-            </p>
-            <p class="venmo-note">
-                Payment + team registration must be completed by <strong>June 16th</strong> to secure your spot.
-                <a href="/signup">Register your team →</a>
-            </p>
-        </div>
+                <ul class="supply-list" aria-label="Supplies covered by donations">
+                    <li>🧊 Ice</li>
+                    <li>🥤 Cups</li>
+                    <li>🔥 Charcoal</li>
+                    <li>🍱 Condiments &amp; Extras</li>
+                    <li>🎉 Party Supplies</li>
+                </ul>
 
-        <!-- ── Supplies Donation ── -->
-        <div class="venmo-card">
-            <h2>🙏 Donate for Supplies</h2>
-            <p class="card-subtitle">
-                Not competing but still want to help? Every dollar goes toward keeping the party going
-                — ice, cups, charcoal, coolers, and more!
-            </p>
+                <p style="font-size:0.95em; font-weight:600; margin-bottom:8px;">Suggested amounts:</p>
+                <div class="amount-chips" role="list" aria-label="Suggested donation amounts">
+                    <span class="amount-chip" role="listitem">$5</span>
+                    <span class="amount-chip" role="listitem">$10</span>
+                    <span class="amount-chip" role="listitem">$20</span>
+                </div>
 
-            <ul class="supply-list" aria-label="Supplies covered by donations">
-                <li>🧊 Ice</li>
-                <li>🥤 Cups</li>
-                <li>🔥 Charcoal</li>
-                <li>🍱 Condiments &amp; Extras</li>
-                <li>🎉 Party Supplies</li>
-            </ul>
+                <div class="venmo-handle">
+                    <span class="venmo-icon">💙</span>
+                    <span>@Gibson-StJohn</span>
+                </div>
 
-            <p style="font-size:0.95em; font-weight:600; margin-bottom:8px;">Suggested amounts:</p>
-            <div class="amount-chips" role="list" aria-label="Suggested donation amounts">
-                <span class="amount-chip" role="listitem">$5</span>
-                <span class="amount-chip" role="listitem">$10</span>
-                <span class="amount-chip" role="listitem">$20</span>
+                <p class="venmo-note">
+                    Send any amount that feels right — every little bit helps and is hugely appreciated! ❤️
+                </p>
             </div>
-
-            <div class="venmo-handle">
-                <span class="venmo-icon">💙</span>
-                <span>@Gibson-StJohn</span>
-            </div>
-
-            <p class="venmo-note">
-                Send any amount that feels right — every little bit helps and is hugely appreciated! ❤️
-            </p>
         </div>
     </div>
 
