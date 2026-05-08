@@ -98,6 +98,8 @@ class RSVP(db.Model):
     status = db.Column(db.Text, nullable=False, server_default='attending')
     guests = db.Column(db.Integer, server_default='0')
     notes = db.Column(db.Text)
+    phone = db.Column(db.Text)
+    sms_opt_in = db.Column(db.Integer, server_default='0')
     event_year = db.Column(db.Integer)
 
 
@@ -218,9 +220,30 @@ def _migrate_event_year():
         conn.commit()
 
 
+def _migrate_rsvp_phone_sms():
+    """Add phone and sms_opt_in columns to the rsvp table if missing.
+
+    Needed for existing databases created before these columns were added.
+    On a fresh DB created via create_all() this is a no-op.
+    """
+    insp = sa_inspect(db.engine)
+    if not insp.has_table('rsvp'):
+        return
+    col_names = [c['name'] for c in insp.get_columns('rsvp')]
+    with db.engine.connect() as conn:
+        if 'phone' not in col_names:
+            conn.execute(text('ALTER TABLE rsvp ADD COLUMN phone TEXT'))
+        if 'sms_opt_in' not in col_names:
+            conn.execute(text('ALTER TABLE rsvp ADD COLUMN sms_opt_in INTEGER DEFAULT 0'))
+        # Backfill NULL sms_opt_in to 0
+        conn.execute(text('UPDATE rsvp SET sms_opt_in = 0 WHERE sms_opt_in IS NULL'))
+        conn.commit()
+
+
 with app.app_context():
     init_db()
     _migrate_event_year()
+    _migrate_rsvp_phone_sms()
     _log_db_diagnostics()
 
 # ── Admin credentials ───────────────────────────────────────────────────────
@@ -577,6 +600,12 @@ def rsvp():
         except ValueError:
             guests = 0
         notes = request.form.get('notes', '').strip()
+        phone = request.form.get('phone', '').strip()
+        sms_opt_in = 1 if request.form.get('sms_opt_in') else 0
+
+        if sms_opt_in and not phone:
+            flash('A phone number is required when you opt in to text updates.')
+            return redirect(url_for('rsvp'))
 
         rsvp_entry = RSVP(
             timestamp=now_ts(),
@@ -585,6 +614,8 @@ def rsvp():
             status=status,
             guests=guests,
             notes=notes,
+            phone=phone or None,
+            sms_opt_in=sms_opt_in,
             event_year=compute_event_year(),
         )
         db.session.add(rsvp_entry)
@@ -967,6 +998,72 @@ def export_bracket():
            ORDER BY m.round, m.match_number'''
     ), {'tid': t.id}).fetchall()
     return _csv_response(rows, 'bracket.csv')
+
+
+@app.route('/export/phones')
+def export_phones():
+    """Export opted-in phone numbers for the selected year (admin-protected).
+
+    Only includes RSVP rows where sms_opt_in=1 AND status='attending'.
+    Duplicate phone numbers are removed.
+
+    Query params:
+      year=YYYY   — defaults to compute_event_year()
+      format=txt  — returns a comma-separated plain-text list for copy/paste
+    """
+    guard = admin_required()
+    if guard:
+        return guard
+
+    selected_year = request.args.get('year', type=int, default=compute_event_year())
+    fmt = request.args.get('format', 'csv').lower()
+
+    rows = db.session.execute(
+        db.select(RSVP)
+        .filter_by(event_year=selected_year, status='attending', sms_opt_in=1)
+        .filter(RSVP.phone.isnot(None))
+        .order_by(RSVP.id)
+    ).scalars().all()
+
+    # Deduplicate by phone number while preserving first occurrence
+    seen_phones: set[str] = set()
+    unique_rows = []
+    for r in rows:
+        if r.phone and r.phone not in seen_phones:
+            seen_phones.add(r.phone)
+            unique_rows.append(r)
+
+    if fmt == 'txt':
+        if not unique_rows:
+            phone_list = ''
+        else:
+            phone_list = ','.join(r.phone for r in unique_rows)
+        output = io.BytesIO(phone_list.encode('utf-8'))
+        output.seek(0)
+        return send_file(
+            output,
+            mimetype='text/plain',
+            as_attachment=True,
+            download_name=f'phones_{selected_year}.txt',
+        )
+
+    # CSV format
+    if not unique_rows:
+        flash('No opted-in phone numbers to export.')
+        return redirect(url_for('dashboard'))
+    si = io.StringIO()
+    writer = csv.writer(si)
+    writer.writerow(['name', 'phone', 'timestamp', 'status', 'event_year'])
+    for r in unique_rows:
+        writer.writerow([r.name, r.phone, r.timestamp, r.status, r.event_year])
+    output = io.BytesIO(si.getvalue().encode('utf-8'))
+    output.seek(0)
+    return send_file(
+        output,
+        mimetype='text/csv',
+        as_attachment=True,
+        download_name=f'phones_{selected_year}.csv',
+    )
 
 
 # ── Misc pages ───────────────────────────────────────────────────────────────
