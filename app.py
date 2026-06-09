@@ -747,6 +747,13 @@ def dashboard():
         db.select(Photo).filter_by(event_year=selected_year).order_by(Photo.id.desc())
     ).scalars().all()
 
+    duplicate_groups = _find_rsvp_duplicates(selected_year)
+    # Flat set of ids that would be removed as extras
+    duplicate_extra_ids = {eid for extras in duplicate_groups.values() for eid in extras}
+    # Canonical ids that have at least one duplicate
+    duplicate_canonical_ids = set(duplicate_groups.keys())
+    duplicate_count = len(duplicate_extra_ids)
+
     return render_template(
         'dashboard.html',
         teams=teams,
@@ -754,6 +761,9 @@ def dashboard():
         volunteers=volunteers,
         photos=photos,
         selected_year=selected_year,
+        duplicate_extra_ids=duplicate_extra_ids,
+        duplicate_canonical_ids=duplicate_canonical_ids,
+        duplicate_count=duplicate_count,
     )
 
 
@@ -906,6 +916,91 @@ def admin_bracket_reset():
 
     flash('Tournament bracket has been reset and regenerated. 🔄')
     return redirect(url_for('admin_bracket'))
+
+
+# ── Duplicate RSVP helpers & admin actions ───────────────────────────────────
+
+def _find_rsvp_duplicates(event_year):
+    """Return a mapping of canonical_id -> [extra_ids_to_remove] for the year.
+
+    Duplicate detection strategy (within the same event_year):
+      1. RSVPs that share the same non-empty, case-insensitive email are grouped.
+      2. RSVPs that have no email and share the same case-insensitive name are grouped.
+
+    Within each group the record with the **highest id** (most recently inserted)
+    is treated as canonical; all others are considered extras.
+    """
+    rsvps = db.session.execute(
+        db.select(RSVP).filter_by(event_year=event_year).order_by(RSVP.id)
+    ).scalars().all()
+
+    email_groups: dict[str, list] = {}
+    name_groups:  dict[str, list] = {}
+
+    for r in rsvps:
+        if r.email and r.email.strip():
+            key = r.email.strip().lower()
+            email_groups.setdefault(key, []).append(r)
+        else:
+            key = r.name.strip().lower()
+            name_groups.setdefault(key, []).append(r)
+
+    result: dict[int, list[int]] = {}
+    for groups in (email_groups, name_groups):
+        for entries in groups.values():
+            if len(entries) < 2:
+                continue
+            # Highest id = most recently submitted → canonical
+            sorted_entries = sorted(entries, key=lambda x: x.id, reverse=True)
+            canonical = sorted_entries[0]
+            extras = sorted_entries[1:]
+            result[canonical.id] = [e.id for e in extras]
+
+    return result
+
+
+@app.route('/admin/rsvp/remove-duplicates', methods=['POST'])
+def admin_remove_duplicate_rsvps():
+    """Remove extra duplicate RSVP entries, keeping the newest per duplicate group."""
+    guard = admin_required()
+    if guard:
+        return guard
+
+    selected_year = request.form.get('year', type=int, default=compute_event_year())
+    duplicate_groups = _find_rsvp_duplicates(selected_year)
+
+    ids_to_delete = [eid for extras in duplicate_groups.values() for eid in extras]
+
+    if not ids_to_delete:
+        flash('No duplicate RSVPs found.')
+        return redirect(url_for('dashboard', year=selected_year))
+
+    db.session.execute(db.delete(RSVP).where(RSVP.id.in_(ids_to_delete)))
+    db.session.commit()
+
+    flash(f'Removed {len(ids_to_delete)} duplicate RSVP(s). ✅')
+    return redirect(url_for('dashboard', year=selected_year))
+
+
+@app.route('/admin/rsvp/<int:rsvp_id>/delete', methods=['POST'])
+def admin_delete_rsvp(rsvp_id):
+    """Delete a single RSVP record by id."""
+    guard = admin_required()
+    if guard:
+        return guard
+
+    rsvp_entry = db.session.get(RSVP, rsvp_id)
+    if not rsvp_entry:
+        flash('RSVP not found.')
+        return redirect(url_for('dashboard'))
+
+    year = rsvp_entry.event_year
+    name = rsvp_entry.name
+    db.session.delete(rsvp_entry)
+    db.session.commit()
+
+    flash(f'RSVP for "{name}" (#{rsvp_id}) has been deleted.')
+    return redirect(url_for('dashboard', year=year))
 
 
 # ── CSV exports (admin-protected) ────────────────────────────────────────────

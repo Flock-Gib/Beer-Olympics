@@ -33,6 +33,24 @@
         .thumb { width: 80px; height: 60px; object-fit: cover; border-radius: 4px; }
         .empty-row td { color: #999; font-style: italic; }
         .table-wrap { overflow-x: auto; }
+        .dup-extra td { background: rgba(214,48,49,0.12); }
+        .dup-extra td:first-child::before { content: '⚠ '; }
+        .badge-dup { display: inline-block; background: #e17055; color: white;
+                     border-radius: 10px; padding: 1px 7px; font-size: 0.72em;
+                     margin-left: 5px; vertical-align: middle; }
+        .badge-canon { display: inline-block; background: #636e72; color: white;
+                       border-radius: 10px; padding: 1px 7px; font-size: 0.72em;
+                       margin-left: 5px; vertical-align: middle; }
+        .dup-alert { background: rgba(214,48,49,0.15); border: 1px solid #d63031;
+                     border-radius: 6px; padding: 10px 16px; margin-bottom: 12px;
+                     display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+        .dup-alert p { margin: 0; color: #ffeaa7; flex: 1; }
+        .btn-danger { background: #d63031; color: white; border: none; padding: 6px 14px;
+                      border-radius: 4px; cursor: pointer; font-size: 0.85em; }
+        .btn-danger:hover { background: #b71c1c; }
+        .btn-del { background: transparent; border: 1px solid #d63031; color: #d63031;
+                   padding: 2px 8px; border-radius: 3px; cursor: pointer; font-size: 0.78em; }
+        .btn-del:hover { background: #d63031; color: white; }
     </style>
 </head>
 <body style="padding-top: 80px;">
@@ -80,21 +98,41 @@
                 &nbsp;
                 <a href="/export/phones?year={{ selected_year }}&format=txt" title="Comma-separated list for copy/paste into your phone">📋 phones.txt</a>
             </div>
+
+            {% if duplicate_count > 0 %}
+            <div class="dup-alert" role="alert">
+                <p>⚠ <strong>{{ duplicate_count }} duplicate RSVP(s) detected</strong> for {{ selected_year }}.
+                   Rows highlighted in red are extras — the newest submission per person is kept as canonical.</p>
+                <form method="POST" action="/admin/rsvp/remove-duplicates"
+                      onsubmit="return confirm('Remove {{ duplicate_count }} duplicate RSVP(s)? The newest entry per person will be kept.');">
+                    <input type="hidden" name="year" value="{{ selected_year }}">
+                    <button type="submit" class="btn-danger">🗑 Remove All Duplicates</button>
+                </form>
+            </div>
+            {% endif %}
+
             <div class="table-wrap">
             <table>
                 <thead>
                     <tr>
                         <th>#</th><th>Timestamp</th><th>Name</th><th>Email</th>
-                        <th>Status</th><th>Guests</th><th>Notes</th>
+                        <th>Status</th><th>Guests</th><th>Notes</th><th>Action</th>
                     </tr>
                 </thead>
                 <tbody>
                 {% if rsvps %}
                   {% for r in rsvps %}
-                  <tr>
+                  <tr{% if r.id in duplicate_extra_ids %} class="dup-extra"{% endif %}>
                     <td>{{ r.id }}</td>
                     <td>{{ r.timestamp }}</td>
-                    <td>{{ r.name }}</td>
+                    <td>
+                        {{ r.name }}
+                        {% if r.id in duplicate_extra_ids %}
+                          <span class="badge-dup">duplicate</span>
+                        {% elif r.id in duplicate_canonical_ids %}
+                          <span class="badge-canon">has duplicate(s)</span>
+                        {% endif %}
+                    </td>
                     <td>{{ r.email or '—' }}</td>
                     <td class="status-{{ r.status }}">
                         {% if r.status == 'attending' %}✅ Attending
@@ -103,10 +141,17 @@
                     </td>
                     <td>{{ r.guests }}</td>
                     <td>{{ r.notes or '—' }}</td>
+                    <td>
+                        <form method="POST" action="/admin/rsvp/{{ r.id }}/delete"
+                              onsubmit="return confirm('Delete RSVP #{{ r.id }} for {{ r.name | replace("'", "") }}?');"
+                              style="display:inline;">
+                            <button type="submit" class="btn-del" title="Delete this RSVP">🗑</button>
+                        </form>
+                    </td>
                   </tr>
                   {% endfor %}
                 {% else %}
-                  <tr class="empty-row"><td colspan="7">No RSVPs yet.</td></tr>
+                  <tr class="empty-row"><td colspan="8">No RSVPs yet.</td></tr>
                 {% endif %}
                 </tbody>
             </table>
