@@ -137,7 +137,7 @@
                 {% if rsvps %}
                   {% for r in rsvps %}
                   <tr{% if r.id in duplicate_extra_ids %} class="dup-extra"{% endif %}>
-                    <td>{{ r.id }}</td>
+                    <td>{{ loop.index }}</td>
                     <td>{{ r.timestamp }}</td>
                     <td>
                         {{ r.name }}
