@@ -1003,6 +1003,53 @@ def admin_delete_rsvp(rsvp_id):
     return redirect(url_for('dashboard', year=year))
 
 
+@app.route('/admin/team/<int:team_id>/delete', methods=['POST'])
+def admin_delete_team(team_id):
+    """Delete a single cornhole team by id.
+
+    If the bracket is currently locked (tournament in progress) and the team
+    appears in any match, deletion is refused to protect the active bracket.
+    The admin should reset the bracket first, then delete the team.
+
+    When the bracket is unlocked (or the team is not in any match), the team
+    is removed and the bracket will auto-regenerate on the next bracket page
+    load.
+    """
+    guard = admin_required()
+    if guard:
+        return guard
+
+    team = db.session.get(Team, team_id)
+    if not team:
+        flash('Team not found.')
+        return redirect(url_for('dashboard'))
+
+    year = team.event_year
+    country = team.country
+
+    # Refuse deletion when the active bracket is locked and references this team
+    t = _get_active_tournament()
+    if t and t.locked:
+        in_bracket = db.session.execute(text(
+            '''SELECT 1 FROM matches
+               WHERE tournament_id = :tid
+                 AND (team1_id = :team_id OR team2_id = :team_id OR winner_id = :team_id)
+               LIMIT 1'''
+        ), {'tid': t.id, 'team_id': team_id}).fetchone()
+        if in_bracket:
+            flash(
+                f'Cannot delete "{country}" — the tournament bracket is locked and this team '
+                'is referenced in an active match. Reset the bracket first, then delete the team.'
+            )
+            return redirect(url_for('dashboard', year=year))
+
+    db.session.delete(team)
+    db.session.commit()
+
+    flash(f'Team "{country}" (#{team_id}) has been deleted. ✅')
+    return redirect(url_for('dashboard', year=year))
+
+
 # ── CSV exports (admin-protected) ────────────────────────────────────────────
 
 def _model_to_dict(instance):
