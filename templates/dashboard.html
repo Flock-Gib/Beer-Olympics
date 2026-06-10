@@ -220,23 +220,30 @@
                 <thead>
                     <tr>
                         <th>#</th><th>Timestamp</th><th>Team Name</th>
-                        <th>Captain</th><th>Email</th><th>Teammate</th>
+                        <th>Captain</th><th>Email</th><th>Teammate</th><th>Action</th>
                     </tr>
                 </thead>
                 <tbody>
                 {% if teams %}
                   {% for t in teams %}
                   <tr>
-                    <td>{{ t.id }}</td>
+                    <td>{{ loop.index }}</td>
                     <td>{{ t.timestamp }}</td>
                     <td>{{ t.country }}</td>
                     <td>{{ t.captain_name }}</td>
                     <td>{{ t.captain_email or '—' }}</td>
                     <td>{{ t.teammate_name }}</td>
+                    <td>
+                        <form method="POST" action="/admin/team/{{ t.id }}/delete"
+                              onsubmit="return confirm('Delete team #{{ t.id }} \u201c{{ t.country | replace("'", "") }}\u201d? This cannot be undone.');"
+                              style="display:inline;">
+                            <button type="submit" class="btn-del" title="Delete this team">🗑</button>
+                        </form>
+                    </td>
                   </tr>
                   {% endfor %}
                 {% else %}
-                  <tr class="empty-row"><td colspan="6">No teams registered yet.</td></tr>
+                  <tr class="empty-row"><td colspan="7">No teams registered yet.</td></tr>
                 {% endif %}
                 </tbody>
             </table>
