@@ -112,6 +112,12 @@
                 &nbsp;
                 <a href="/export/phones?year={{ selected_year }}&format=txt" title="Comma-separated list for copy/paste into your phone">📋 phones.txt</a>
             </div>
+            <p style="color:#aaa; font-size:0.9em; margin:0 0 12px;">
+                Attending headcount:
+                <strong>{{ total_attending_count }}</strong>
+                ({{ attending_rsvp_count }} RSVP{{ 's' if attending_rsvp_count != 1 else '' }}
+                + {{ additional_guest_count }} guest{{ 's' if additional_guest_count != 1 else '' }})
+            </p>
 
             {% if duplicate_count > 0 %}
             <div class="dup-alert" role="alert">
