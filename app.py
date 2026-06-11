@@ -753,6 +753,9 @@ def dashboard():
     # Canonical ids that have at least one duplicate
     duplicate_canonical_ids = set(duplicate_groups.keys())
     duplicate_count = len(duplicate_extra_ids)
+    attending_rsvp_count = sum(1 for r in rsvps if r.status == 'attending')
+    additional_guest_count = sum(max(0, r.guests or 0) for r in rsvps if r.status == 'attending')
+    total_attending_count = attending_rsvp_count + additional_guest_count
 
     return render_template(
         'dashboard.html',
@@ -764,6 +767,9 @@ def dashboard():
         duplicate_extra_ids=duplicate_extra_ids,
         duplicate_canonical_ids=duplicate_canonical_ids,
         duplicate_count=duplicate_count,
+        attending_rsvp_count=attending_rsvp_count,
+        additional_guest_count=additional_guest_count,
+        total_attending_count=total_attending_count,
     )
 
 
@@ -1236,4 +1242,3 @@ def too_large(e):
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port, debug=os.getenv('FLASK_ENV') != 'production')
-
